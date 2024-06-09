@@ -21,5 +21,5 @@ Feel free to connect with me and explore new opportunities, future collaboration
 **Data Attribution for Diffusion Models: Timestep-induced Bias in Influence Estimation**  
 <ins>Tong Xie\*</ins>, Haoyu Li\*, Andrew Bai, Cho-jui Hsieh (\*Equal Contribution)
 
-[[arXiv]](https://arxiv.org/abs/2401.09031) &nbsp;Nov, 2023
+[[arXiv]](https://arxiv.org/abs/2401.09031) [[OpenReview]](https://openreview.net/forum?id=P3Lyun7CZs) &nbsp;TMLR 2024
 

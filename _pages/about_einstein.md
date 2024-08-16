@@ -1,5 +1,5 @@
-Write your biography here. Tell the world about yourself. Link to your favorite [subreddit](http://reddit.com). You can put a picture in, too. The code is already in, just name your picture `prof_pic.jpg` and put it in the `img/` folder.
+I am a 4th-year `Applied Mathematics` undergraduate student at `UCLA`. 
 
-Put your address / P.O. box / other info right below your picture. You can also disable any these elements by editing `profile` property of the YAML header of your `_pages/about.md`. Edit `_bibliography/papers.bib` and Jekyll will render your [publications page](/al-folio/publications/) automatically.
+My research interests are in `Explainable AI`, `Generative Models`, and `LLMs`. Currently, I am working on interpretation methods for deep learning models, seeking to shed light on the inner workings of these "black-box" models and making AI more transparent. I am grateful to be advised by [Prof. Cho-Jui Hsieh](https://web.cs.ucla.edu/~chohsieh/) at the [UCLA Computational Machine Learning Lab](https://sites.google.com/view/chohsieh-research/home) as an undergrad researcher.
 
-Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them.
+Feel free to connect with me and explore new opportunities, collaborations, and exciting ventures together!

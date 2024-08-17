@@ -1,16 +1,18 @@
 ---
 layout: page
 title: project 1
-description: with background image
+description: GES UCLA
 img: assets/img/12.jpg
 importance: 1
 category: work
 related_publications: true
 ---
 
-Every project has a beautiful feature showcase page.
-It's easy to include images in a flexible 3-column grid format.
-Make your photos 1/3, 2/3, or full width.
+Beyond academic pursuits, I am actively involved in student organizations at UCLA. I am the `Co-President` at [Global Entrepreneurship Society (GES) at UCLA](https://gesatucla.org/), a student organization that ignites curiosity for new innovations and encourages entrepreneurial thinking. I also had the opportunity to work with [Startup UCLA](https://startupucla.com/), where the dynamic startup ecosystem gave me hands-on experience of turning groundbreaking ideas into reality.
+
+We organize fun activities such as startup hackathons, case competitions, and speaker series. If you wish to discuss potential collaborations, please feel free to connect with me or reach out to GES UCLA through [email](gesatucla@gmail.com).
+
+
 
 To give your project a background in the portfolio page, just add the img tag to the front matter like so:
 
@@ -23,13 +25,13 @@ To give your project a background in the portfolio page, just add the img tag to
 
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/1.jpg" title="example image" class="img-fluid rounded z-depth-1" %}
+        {% include figure.liquid loading="eager" path="assets/img/khosla.jpg" title="event with Khosla" class="img-fluid rounded z-depth-1" %}
     </div>
     <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/3.jpg" title="example image" class="img-fluid rounded z-depth-1" %}
+        {% include figure.liquid loading="eager" path="assets/img/visionhack.jpg" title="visionhack 2023" class="img-fluid rounded z-depth-1" %}
     </div>
     <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/5.jpg" title="example image" class="img-fluid rounded z-depth-1" %}
+        {% include figure.liquid loading="eager" path="assets/img/group1.heic" title="group pic" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 <div class="caption">
@@ -37,12 +39,12 @@ To give your project a background in the portfolio page, just add the img tag to
 </div>
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/5.jpg" title="example image" class="img-fluid rounded z-depth-1" %}
+        {% include figure.liquid loading="eager" path="assets/img/group2.jpg" title="group pic" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
-<div class="caption">
-    This image can also have a caption. It's like magic.
 </div>
+
+---
 
 You can also put regular text between your rows of images, even citations {% cite einstein1950meaning %}.
 Say you wanted to write a bit about your project before you posted the rest of the images.

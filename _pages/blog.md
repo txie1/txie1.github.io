@@ -2,7 +2,7 @@
 layout: page
 title: blog
 permalink: /blog/
-description: a space for notes / ideas / whiteboards
+description: a space for notes / ideas / whiteboards.
 nav: true
 nav_order: 1
 horizontal: false
@@ -14,7 +14,7 @@ The field of machine learning has witnessed a surge in research on generative mo
 
 Click [here](https://descriptive-ravioli-e02.notion.site/Generative-Models-5daf5dc59d4c48d29337c6edfaad0927) to visit our page.
 
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/1666df37-7969-4d68-a7c2-7fac3a2b1ce4">
+<img width="700" alt="image" src="https://github.com/user-attachments/assets/1666df37-7969-4d68-a7c2-7fac3a2b1ce4">
 
 
 ## Generative Models

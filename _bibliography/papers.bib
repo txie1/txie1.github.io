@@ -6,7 +6,7 @@
   author    = {Tong Xie and Haoyu Li and Andrew Bai and Cho-Jui Hsieh},
   journal   = {Transactions on Machine Learning Research (TMLR)},
   year      = {2024},
-  preview   = {img_tracing.jpg},
+  preview   = {retrac.jpg},
   pdf       = {https://arxiv.org/abs/2401.09031},
   code      = "https://github.com/txie1/diffusion-ReTrac",
   abstract  = {Data attribution methods trace model behavior back to its training dataset, offering an effective approach to better understand "black-box" neural networks. While prior research established quantifiable links between model output and training data in diverse settings, interpreting diffusion model outputs in relation to training samples remains underexplored. In particular, diffusion models operate over a sequence of timesteps instead of instantaneous input-output relationships in previous contexts, posing a significant challenge to extend existing frameworks to diffusion models directly. Notably, we present Diffusion-TracIn that incorporates this temporal dynamics and observe that samples' loss gradient norms are highly dependent on timestep. This trend leads to a prominent bias in influence estimation, and is particularly severe for samples trained on large-norm-inducing timesteps, causing them to be generally influential. To mitigate this bias, we introduce Diffusion-ReTrac as a re-normalized adaptation that retrieves training samples targeted to the test sample of interest, enabling a localized measurement of influence and considerably more intuitive visualization. We demonstrate the efficacy of our approach through various evaluation metrics and auxiliary tasks, outperforming in terms of specificity of attribution by over 60%.},

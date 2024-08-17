@@ -3,13 +3,13 @@
 
 @article{xie2024data,
   title={Data Attribution for Diffusion Models: Timestep-induced Bias in Influence Estimation},
-  author={Xie, Tong and Li, Haoyu and Bai, Andrew and Hsieh, Cho-Jui},
-  journal={arXiv preprint arXiv:2401.09031},
+  author={Tong Xie and Haoyu Li and Andrew Bai and Cho-Jui Hsieh},
+  journal={Transactions on Machine Learning Research (TMLR)},
   year={2024},
 
-  preview   = {assets/img/img_tracing.pdf},
+  preview   = {assets/img/img_tracing.jpg},
   pdf       = {https://arxiv.org/abs/2401.09031},
   code      = "https://github.com/txie1/diffusion-ReTrac",
-  abstract  = {The goal of multi-objective reinforcement learning (MORL) is to learn policies that simultaneously optimize multiple competing objectives. In practice, an agent's preferences over the objectives may not be known apriori, and hence, we require policies that can generalize to arbitrary preferences at test time. In this work, we propose a new data-driven setup for offline MORL, where we wish to learn a preference-agnostic policy agent using only a finite dataset of offline demonstrations of other agents and their preferences. The key contributions of this work are two-fold. First, we introduce D4MORL, (D)atasets for MORL that are specifically designed for offline settings. It contains 1.8 million annotated demonstrations obtained by rolling out reference policies that optimize for randomly sampled preferences on 6 MuJoCo environments with 2-3 objectives each. Second, we propose Pareto-Efficient Decision Agents (PEDA), a family of offline MORL algorithms that builds and extends Decision Transformers via a novel preference-and-return-conditioned policy. Empirically, we show that PEDA closely approximates the behavioral policy on the D4MORL benchmark and provides an excellent approximation of the Pareto-front with appropriate conditioning, as measured by the hypervolume and sparsity metrics.},
+  abstract  = {Data attribution methods trace model behavior back to its training dataset, offering an effective approach to better understand "black-box" neural networks. While prior research established quantifiable links between model output and training data in diverse settings, interpreting diffusion model outputs in relation to training samples remains underexplored. In particular, diffusion models operate over a sequence of timesteps instead of instantaneous input-output relationships in previous contexts, posing a significant challenge to extend existing frameworks to diffusion models directly. Notably, we present Diffusion-TracIn that incorporates this temporal dynamics and observe that samples' loss gradient norms are highly dependent on timestep. This trend leads to a prominent bias in influence estimation, and is particularly severe for samples trained on large-norm-inducing timesteps, causing them to be generally influential. To mitigate this bias, we introduce Diffusion-ReTrac as a re-normalized adaptation that retrieves training samples targeted to the test sample of interest, enabling a localized measurement of influence and considerably more intuitive visualization. We demonstrate the efficacy of our approach through various evaluation metrics and auxiliary tasks, outperforming in terms of specificity of attribution by over 60%.},
   selected  = {true}
 }

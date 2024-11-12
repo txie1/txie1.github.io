@@ -29,7 +29,9 @@ Link to your social media connections, too. This theme is set up to use [Font Aw
 
 I am a 4th-year `Applied Mathematics` undergraduate student at `UCLA`. 
 
-My research interests are in `Explainable AI`, `Generative Models`, and `LLMs`. Currently, I am working on interpretation methods for deep learning models, seeking to shed light on the inner workings of these "black-box" models and making AI more transparent. I am grateful to be advised by [Prof. Cho-Jui Hsieh](https://web.cs.ucla.edu/~chohsieh/) at the [UCLA Computational Machine Learning Lab](https://sites.google.com/view/chohsieh-research/home) as an undergrad researcher.
+My research interests are in `Explainable AI`, `Generative Models`, and `LLMs`. Currently, I am working on interpretation methods for deep learning models, seeking to shed light on the inner workings of these "black-box" models and making AI more transparent. I am grateful to be advised by [Prof. Cho-Jui Hsieh](https://web.cs.ucla.edu/~chohsieh/), [Prof. Yizhou Sun](https://web.cs.ucla.edu/~yzsun/), and [Prof. Wei Wang](https://web.cs.ucla.edu/~weiwang/) in our research projects.
+
+<!-- I am grateful to be advised by [Prof. Cho-Jui Hsieh](https://web.cs.ucla.edu/~chohsieh/) at the [UCLA Computational Machine Learning Lab](https://sites.google.com/view/chohsieh-research/home) as an undergrad researcher.-->
 
 <!-- Beyond my academic pursuits, I am actively involved in student organizations at UCLA. I am the Co-President at [Global Entrepreneurship Society (GES) at UCLA](https://gesatucla.org/), a student organization that ignites my curiosity for new innovations and encourages entrepreneurial thinking. I also had the opportunity to work with [Startup UCLA](https://startupucla.com/), where the dynamic startup ecosystem gave me hands-on experience of turning groundbreaking ideas into reality. -->
 

@@ -29,7 +29,9 @@ Link to your social media connections, too. This theme is set up to use [Font Aw
 
 I am a 4th-year `Applied Mathematics` undergraduate student at `UCLA`. 
 
-My research interests are in `Explainable AI`, `Generative Models`, and `LLMs`. Currently, I am working on interpretation methods for deep learning models, seeking to shed light on the inner workings of these "black-box" models and making AI more transparent. I am grateful to be advised by [Prof. Cho-Jui Hsieh](https://web.cs.ucla.edu/~chohsieh/), [Prof. Yizhou Sun](https://web.cs.ucla.edu/~yzsun/), and [Prof. Wei Wang](https://web.cs.ucla.edu/~weiwang/) in our research projects.
+My research interests are in `Generative Models`, `Trustworthy ML`, and `LLMs`. Currently, I am working on preference alignment (RLHF) in LLMs, seeking to bridge the gap between machine intelligence and human intent-- especially when conveyed through diverse and noisy feedback. I am grateful to be advised by [Prof. Cho-Jui Hsieh](https://web.cs.ucla.edu/~chohsieh/), [Prof. Yizhou Sun](https://web.cs.ucla.edu/~yzsun/), and [Prof. Wei Wang](https://web.cs.ucla.edu/~weiwang/) in our research projects.
+
+<!-- My research interests are in `Explainable AI`, `Generative Models`, and `LLMs`. Currently, I am working on interpretation methods for deep learning models, seeking to shed light on the inner workings of these "black-box" models and making AI more transparent. I am grateful to be advised by [Prof. Cho-Jui Hsieh](https://web.cs.ucla.edu/~chohsieh/), [Prof. Yizhou Sun](https://web.cs.ucla.edu/~yzsun/), and [Prof. Wei Wang](https://web.cs.ucla.edu/~weiwang/) in our research projects.-->
 
 <!-- I am grateful to be advised by [Prof. Cho-Jui Hsieh](https://web.cs.ucla.edu/~chohsieh/) at the [UCLA Computational Machine Learning Lab](https://sites.google.com/view/chohsieh-research/home) as an undergrad researcher.-->
 

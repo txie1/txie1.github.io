@@ -29,7 +29,7 @@ We organize fun activities such as startup `hackathons`, `case competitions`, an
 </div>
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/group2.jpg" title="group pic" class="img-fluid rounded z-depth-1" %}
+        {% include figure.liquid loading="eager" path="assets/img/group2.jpg" title="group2" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
 
@@ -38,6 +38,6 @@ We organize fun activities such as startup `hackathons`, `case competitions`, an
 
 <div class="row">
     <div class="col-sm mt-3 mt-md-0">
-        {% include figure.liquid loading="eager" path="assets/img/photos.jpg" title="collage" class="img-fluid rounded z-depth-1" %}
+        {% include figure.liquid loading="eager" path="assets/img/photos.jpg" title="photos" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>

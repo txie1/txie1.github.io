@@ -46,3 +46,4 @@ We organize fun activities such as startup `hackathons`, `case competitions`, an
         {% include figure.liquid loading="eager" path="assets/img/IMG_2506.jpg" title="photos" class="img-fluid rounded z-depth-1" %}
     </div>
 </div>
+

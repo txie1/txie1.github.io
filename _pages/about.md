@@ -28,6 +28,7 @@ Link to your social media connections, too. This theme is set up to use [Font Aw
 
 I am a first-year PhD student in Computer Science at UCLA, fortunate to be advised by [Prof. Cho-Jui Hsieh](https://web.cs.ucla.edu/~chohsieh/).
 
-I am broadly interested in `Post-training` of Large Language Models. Currently, I am working on LLM supervised fine-tuning (`SFT`), reinforcement learning (`RL`), and `reward modeling`, with a focus on improving reasoning capabilities and encouraging stronger generalization.
+I am broadly interested in `Post-training` of Large Language Models. Currently, I am working on LLM supervised fine-tuning (`SFT`), reinforcement learning (`RL`), and `reward modeling`, to improve reasoning capabilities and encourage stronger generalization.
 
 Feel free to connect with me and explore opportunities, collaborations, and exciting ventures together!
+

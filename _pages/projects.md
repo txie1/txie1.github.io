@@ -11,7 +11,7 @@ horizontal: false
 
 ---
 
-Beyond academic pursuits, I am also actively involved in student organizations at UCLA. I am currently the `Co-President` at [Global Entrepreneurship Society (GES) at UCLA](https://gesatucla.org/), a student organization that ignites curiosity for new innovations and encourages entrepreneurial thinking. I also had the opportunity to work with [Startup UCLA](https://startupucla.com/), where the dynamic startup ecosystem gave me hands-on experience of turning groundbreaking ideas into reality.
+Beyond academic pursuits, I am also actively involved in student organizations at UCLA. In particular, [Global Entrepreneurship Society (GES) at UCLA](https://gesatucla.org/) is a great student organization that ignites curiosity for new innovations and encourages entrepreneurial thinking. I also had the opportunity to work with [Startup UCLA](https://startupucla.com/), where the dynamic startup ecosystem gave me hands-on experience of turning groundbreaking ideas into reality.
 
 We organize fun activities such as startup `hackathons`, `case competitions`, and `speaker events`. If you wish to discuss potential collaborations, please feel free to *connect with me or reach out to GES UCLA*.
 

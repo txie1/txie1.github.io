@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Target-SFT: A Unifying Lens on Supervised Fine-Tuning</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false})"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue: #2563eb;
+  --blue-light: #eff6ff;
+  --blue-mid: #bfdbfe;
+  --green: #059669;
+  --green-light: #ecfdf5;
+  --purple: #7c3aed;
+  --purple-light: #f5f3ff;
+  --amber: #d97706;
+  --slate: #64748b;
+  --text: #111827;
+  --muted: #6b7280;
+  --bg: #ffffff;
+  --bg-alt: #f9fafb;
+  --border: #e5e7eb;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.page-wrap {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Back link */
+.back-link {
+  display: block;
+  padding: 16px 24px;
+  font-size: 14px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  max-width: 860px;
+  margin: 0 auto;
+}
+.back-link:hover { color: var(--blue); text-decoration: none; }
+.back-link::before { content: '← '; }
+
+/* ── Hero ── */
+.hero {
+  padding: 64px 0 48px;
+  text-align: center;
+}
+.hero-badge {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: var(--blue-light);
+  border: 1px solid var(--blue-mid);
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -.02em;
+  max-width: 700px;
+  margin: 0 auto 20px;
+}
+.hero-authors {
+  font-size: 15px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.hero-authors span { color: var(--text); font-weight: 500; }
+.hero-venue {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+.hero-links {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 52px;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all .15s;
+  cursor: pointer;
+}
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; text-decoration: none; color: #fff; }
+.btn-outline { background: #fff; color: var(--text); border: 1.5px solid var(--border); }
+.btn-outline:hover { border-color: var(--blue); color: var(--blue); text-decoration: none; }
+
+/* Pipeline diagram */
+.pipeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  flex-wrap: wrap;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  max-width: 680px;
+  margin: 0 auto;
+}
+.pipe-box {
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 18px;
+  text-align: center;
+  font-size: 14px;
+  box-shadow: var(--shadow);
+}
+.pipe-box .label { font-weight: 600; color: var(--text); font-size: 13px; margin-bottom: 2px; }
+.pipe-box .math-label { font-size: 12px; color: var(--muted); }
+.pipe-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 10px;
+  color: var(--muted);
+  font-size: 12px;
+  gap: 2px;
+}
+.pipe-arrow-line {
+  width: 36px;
+  height: 2px;
+  background: var(--border);
+  position: relative;
+}
+.pipe-arrow-line::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: -4px;
+  border: 5px solid transparent;
+  border-left-color: var(--border);
+}
+.pipe-box.highlight { border-color: var(--blue); background: var(--blue-light); }
+.pipe-box.highlight .label { color: var(--blue); }
+
+/* ── Sections ── */
+section { padding: 56px 0; }
+section + section { border-top: 1px solid var(--border); }
+
+.section-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+.section-title {
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+.section-subtitle {
+  font-size: 15px;
+  color: var(--muted);
+  max-width: 600px;
+  margin-bottom: 36px;
+}
+
+/* Callout */
+.callout {
+  border-left: 3px solid var(--blue);
+  background: var(--blue-light);
+  border-radius: 0 8px 8px 0;
+  padding: 16px 20px;
+  margin: 24px 0;
+  font-style: italic;
+  color: #1e40af;
+  font-size: 15px;
+}
+.callout-green {
+  border-left-color: var(--green);
+  background: var(--green-light);
+  color: #065f46;
+}
+
+/* Equation block */
+.eq-block {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin: 20px 0;
+  overflow-x: auto;
+  text-align: center;
+}
+
+/* Key bullets */
+.key-bullets {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 24px 0;
+}
+.key-bullets li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 15px;
+}
+.key-bullets .bullet-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+/* Design table */
+.design-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin: 24px 0;
+}
+.design-table th {
+  background: var(--bg-alt);
+  padding: 10px 16px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border);
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.design-table td {
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.design-table tr:last-child td { border-bottom: none; }
+.design-table tr.highlight-row td { background: var(--green-light); font-weight: 600; }
+.design-table tr.highlight-row td:first-child { border-left: 3px solid var(--green); }
+
+.method-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.tag-gray { background: #f1f5f9; color: #475569; }
+.tag-amber { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.tag-blue { background: var(--blue-light); color: var(--blue); border: 1px solid var(--blue-mid); }
+.tag-purple { background: var(--purple-light); color: var(--purple); }
+.tag-green { background: var(--green-light); color: var(--green); border: 1px solid #a7f3d0; }
+
+/* Chart container */
+.chart-wrap {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  margin: 24px 0;
+}
+.chart-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.toggle-group {
+  display: flex;
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.toggle-btn {
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all .15s;
+}
+.toggle-btn.active { background: var(--blue); color: #fff; }
+
+.slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.slider-wrap input[type=range] { width: 100px; accent-color: var(--blue); }
+.slider-val { font-weight: 600; color: var(--text); min-width: 30px; }
+
+.chart-canvas-wrap { height: 320px; position: relative; }
+
+/* 2D Method Map */
+.method-map-wrap {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin: 24px 0;
+}
+.method-map-wrap svg { display: block; margin: 0 auto; }
+
+/* Results grid */
+.results-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.filter-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  border: 1.5px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--muted);
+  transition: all .15s;
+}
+.filter-btn.active { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+.results-chart-wrap { height: 340px; position: relative; }
+
+/* Method card */
+.method-card {
+  background: var(--bg-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin: 24px 0;
+}
+.method-card.featured {
+  border-color: var(--green);
+  background: var(--green-light);
+}
+.method-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.choice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+@media (max-width: 600px) { .choice-grid { grid-template-columns: 1fr; } }
+.choice-item {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.choice-item .choice-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+.choice-item .choice-eq { margin-bottom: 8px; }
+.choice-item .choice-interp { font-size: 13px; color: var(--muted); }
+
+/* Intuition boxes */
+.intuition-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+@media (max-width: 580px) { .intuition-grid { grid-template-columns: 1fr; } }
+.intuition-box {
+  border-radius: 8px;
+  padding: 14px 16px;
+  font-size: 14px;
+  border: 1px solid transparent;
+}
+.intuition-box strong { display: block; margin-bottom: 4px; font-size: 13px; }
+.intuition-high { background: #eff6ff; border-color: #bfdbfe; }
+.intuition-high strong { color: var(--blue); }
+.intuition-low { background: #fdf4ff; border-color: #e9d5ff; }
+.intuition-low strong { color: var(--purple); }
+
+/* Takeaways */
+.takeaway-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 28px 0;
+}
+@media (max-width: 580px) { .takeaway-grid { grid-template-columns: 1fr; } }
+.takeaway-card {
+  border-radius: var(--radius);
+  padding: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+}
+.takeaway-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--blue);
+  opacity: .25;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.takeaway-text { font-size: 14px; font-weight: 600; color: var(--text); }
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .pipeline { flex-direction: column; }
+  .pipe-arrow { transform: rotate(90deg); }
+}
+
+/* Dual chart layout */
+.dual-chart-wrap {
+  display: grid;
+  grid-template-columns: 1fr 72px 1fr;
+  align-items: center;
+  gap: 0;
+}
+@media (max-width: 620px) {
+  .dual-chart-wrap { grid-template-columns: 1fr; gap: 16px; }
+  .chart-derives-connector { display: none; }
+}
+.chart-derives-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.derives-badge {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 8px 10px;
+  text-align: center;
+  line-height: 1.5;
+}
+@keyframes derivePulse {
+  0%   { box-shadow: 0 0 0 0   rgba(37,99,235,.28); border-color: #93c5fd; }
+  55%  { box-shadow: 0 0 0 5px rgba(37,99,235,.0);  border-color: #3b82f6; }
+  100% { box-shadow: 0 0 0 0   rgba(37,99,235,.0);  border-color: #cbd5e1; }
+}
+.derives-badge.pulse { animation: derivePulse 0.45s ease-out; }
+.chart-math-label {
+  position: absolute;
+  font-size: 11px;
+  line-height: 1;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translate(0, -50%);
+  display: none;
+}
+</style>
+</head>
+
+<body>
+
+<a href="https://txie1.github.io" class="back-link">txie1.github.io</a>
+
+<!-- ━━━━━━━━━━━━━━━ HERO ━━━━━━━━━━━━━━━ -->
+<div class="page-wrap">
+<section class="hero">
+  <!-- <div class="hero-badge">NeurIPS 2026</div> -->
+  <!-- <h1>A Unifying Lens on Supervised Fine-Tuning Through Target Distribution Design</h1> -->
+  <h1>A Unifying Lens on SFT Through Target Distribution Design</h1>
+  <p class="hero-authors">
+    <span>Tong Xie</span> &nbsp;·&nbsp; <span>Yuanhao Ban</span> &nbsp;·&nbsp;
+    <span>Yunqi Hong</span> &nbsp;·&nbsp; <span>Sohyun An</span> &nbsp;·&nbsp; 
+    <span>Yihang Chen</span> &nbsp;·&nbsp; <span>Cho-Jui Hsieh</span>
+  </p>
+  <p class="hero-venue">University of California, Los Angeles (UCLA)</p>
+  <div class="hero-links">
+    <a class="btn btn-primary" href="#">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      Paper
+    </a>
+    <a class="btn btn-outline" href="#">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+      Code
+    </a>
+    <a class="btn btn-outline" href="#bibtex">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
+      BibTeX
+    </a>
+  </div>
+
+  <!-- Pipeline diagram -->
+  <div class="pipeline">
+    <div class="pipe-box">
+      <div class="label">SFT Loss</div>
+      <div class="math-label">$\mathcal{L}(z, y_t)$</div>
+    </div>
+    <div class="pipe-arrow">
+      <div class="pipe-arrow-line"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">gradient</div>
+    </div>
+    <div class="pipe-box">
+      <div class="label">Logit Update</div>
+      <div class="math-label">$g_k = \partial\mathcal{L}/\partial z_k$</div>
+    </div>
+    <div class="pipe-arrow">
+      <div class="pipe-arrow-line"></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">invert</div>
+    </div>
+    <div class="pipe-box highlight">
+      <div class="label">Target Distribution</div>
+      <div class="math-label">$Q_k = p_k - g_k$</div>
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━━━━━━ TL;DR ━━━━━━━━━━━━━━━ -->
+<section>
+  <div class="section-tag">Overview</div>
+  <h2 class="section-title">TL;DR</h2>
+  <div class="callout">
+    SFT losses are usually studied as objectives, but their real effect is to define a <strong>token-level target distribution</strong> through gradients. We reinterpret SFT as <strong>target distribution design</strong>, introduce the <strong>Q-target framework</strong> that unifies existing methods, and propose <strong>Target-SFT</strong> — which adaptively combines label imitation with teacher-guided alternatives.
+  </div>
+  <ul class="key-bullets">
+    <li>
+      <span class="bullet-icon">1</span>
+      <span>Standard SFT is implicitly <strong>one-hot target matching</strong> — every observed token is treated as the uniquely correct continuation.</span>
+    </li>
+    <li>
+      <span class="bullet-icon">2</span>
+      <span>Many existing SFT variants can be <strong>unified</strong> as different implicit choices of a target distribution $Q = \gamma_t \delta_{y_t} + (1-\gamma_t)\tilde\pi_t$.</span>
+    </li>
+    <li>
+      <span class="bullet-icon">3</span>
+      <span>Target-SFT <strong>explicitly designs both branches</strong>: label trust $\gamma_t$ via model probability, and the residual $\tilde\pi_t$ via a teacher-guided distribution.</span>
+    </li>
+    <li>
+      <span class="bullet-icon">4</span>
+      <span>Target-SFT achieves the <strong>best Average@16</strong> across all 10 evaluated dataset-model settings in math and medical reasoning.</span>
+    </li>
+  </ul>
+</section>
+
+<!-- ━━━━━━━━━━━━━━━ MOTIVATION ━━━━━━━━━━━━━━━ -->
+<section>
+  <div class="section-tag">Motivation</div>
+  <h2 class="section-title">A loss is a surrogate. What target does it imply?</h2>
+  <p class="section-subtitle">Every SFT loss generates gradients over the vocabulary. Those gradients reveal the target distribution the model is being pushed toward.</p>
+
+  <p>At each prefix $x_t$, the model outputs logits $z$ and a distribution $p = \text{softmax}(z)$. The cross-entropy gradient with respect to logit $k$ is:</p>
+
+  <div class="eq-block">
+    $$\frac{\partial \mathcal{L}_{\text{CE}}}{\partial z_k} = p_k - Q_k$$
+  </div>
+
+  <p>This relationship can be <em>inverted</em>. Given any differentiable loss $\mathcal{L}$ with logit gradient $g_k = \partial \mathcal{L}/\partial z_k$, the induced target distribution is:</p>
+
+  <div class="eq-block">
+    $$Q_k := p_k - g_k$$
+  </div>
+
+  <p>This reveals what each loss is actually teaching the model — not via its algebraic form, but via the probability updates it drives.</p>
+
+  <div class="callout">
+    The loss is the mechanism. The induced target distribution is the learning signal.
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━━━━━━ STANDARD SFT ━━━━━━━━━━━━━━━ -->
+<section>
+  <div class="section-tag">Example</div>
+  <h2 class="section-title">Standard SFT induces a one-hot target</h2>
+  <p class="section-subtitle">Applying the inversion formula to standard cross-entropy reveals its hidden assumption.</p>
+
+  <p>Standard SFT minimizes $\mathcal{L}_\text{SFT} = -\log \pi_\theta(y_t \mid x_t)$, whose logit gradient is $g_j = p_j - \mathbf{1}\{j = y_t\}$. Applying $Q_k = p_k - g_k$:</p>
+
+  <div class="eq-block">
+    $$Q_\text{SFT}(k) = \begin{cases} 1 & k = y_t \\ 0 & k \neq y_t \end{cases} = \delta_{y_t}$$
+  </div>
+
+  <p>The induced target is exactly the <strong>one-hot distribution</strong> — assigning all probability mass to the demonstrated token and none to any alternative.</p>
+
+  <div style="margin:28px 0;">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:10px;font-weight:500;">Target distribution induced by standard SFT</div>
+    <div class="chart-wrap" style="padding:20px;">
+      <div style="height:180px;position:relative;">
+        <canvas id="onehotChart"></canvas>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;text-align:center;">
+        All target mass placed on the observed token $y_t$. Every other token receives $Q = 0$.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout" style="border-left-color:#f59e0b;background:#fffbeb;color:#78350f;">
+    <strong>Implicit assumption:</strong> Every demonstrated token is ideal, reliable, and the uniquely correct continuation — regardless of noise, ambiguity, or the model's existing knowledge.
+  </div>
+
+  <!-- Comparison chart: SFT vs p-loss -->
+  <div style="margin-top:36px;">
+    <p style="font-size:15px;margin-bottom:6px;">Contrast this with <strong>p-loss</strong> — a probability-weighted loss $\mathcal{L} = -\mathrm{sg}(p_y)\log\pi_\theta(y_t)$. Its logit gradients are $g_{y_t} = -p_y(1-p_y)$ and $g_k = p_y\,p_k$. Applying $Q_k = p_k - g_k$:</p>
+    <div class="eq-block">
+      $$Q_\text{p-loss}(k) = \begin{cases} 2p_y - p_y^2 & k = y_t \\ (1-p_y)\,p_k & k \neq y_t \end{cases}$$
+    </div>
+    <p style="font-size:15px;margin-bottom:20px;">Unlike SFT, p-loss <em>contracts</em> the correct-token target and <em>spreads</em> mass to alternatives when the model is uncertain. The chart below uses a binary vocabulary to make this concrete.</p>
+
+    <div class="chart-wrap">
+      <!-- p_y slider -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12.5px;color:var(--muted);margin-bottom:8px;">
+          Model probability in observed token: $p_y$ = <span id="pyVal" style="font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;">0.30</span>
+        </div>
+        <input type="range" id="pySlider" min="0" max="100" step="1" value="30"
+               style="width:100%;accent-color:#2563eb;cursor:pointer;" oninput="onPySlider(this.value)">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#b0b8c4;margin-top:-10px;padding:0 1px;">
+          <span>Low confidence</span><span>Medium</span><span>High confidence</span>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:14px;font-size:13px;align-items:center;row-gap:8px;">
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;">Method</span>
+          <span style="display:flex;align-items:center;gap:6px;color:var(--muted);"><span style="width:20px;height:2.5px;background:#475569;display:inline-block;border-radius:2px;"></span>SFT</span>
+          <span style="display:flex;align-items:center;gap:6px;color:var(--muted);"><span style="width:20px;height:2.5px;background:#d97706;display:inline-block;border-radius:2px;"></span>p-loss</span>
+        </div>
+        <div style="width:1px;height:16px;background:var(--border);"></div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span style="font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;">Token</span>
+          <span style="display:flex;align-items:center;gap:6px;color:var(--muted);">
+            <svg width="20" height="6" viewBox="0 0 20 6"><line x1="0" y1="3" x2="20" y2="3" stroke="#94a3b8" stroke-width="2"/></svg>Observed $y_t$
+          </span>
+          <span style="display:flex;align-items:center;gap:6px;color:var(--muted);">
+            <svg width="20" height="6" viewBox="0 0 20 6"><line x1="0" y1="3" x2="20" y2="3" stroke="#94a3b8" stroke-width="2" stroke-dasharray="5,3"/></svg>Other tokens $k$
+          </span>
+        </div>
+      </div>
+
+      <!-- Dual chart: gradient | connector | Q-target -->
+      <div class="dual-chart-wrap">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em;">Loss Gradient $\;\partial\mathcal{L}/\partial z_k$</div>
+          <div style="position:relative;">
+            <canvas id="gradChart"></canvas>
+            <span id="grad-label-0" class="chart-math-label" style="color:#475569;">$1-p_y$</span>
+            <span id="grad-label-1" class="chart-math-label" style="color:#475569;">$-p_k$</span>
+            <span id="grad-label-2" class="chart-math-label" style="color:#d97706;">$p_y(1-p_y)$</span>
+            <span id="grad-label-3" class="chart-math-label" style="color:#d97706;">$-p_y p_k$</span>
+          </div>
+        </div>
+
+        <div class="chart-derives-connector">
+          <div id="derivesBadge" class="derives-badge">
+            <div style="font-size:7px;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">Leads to Target</div>
+            <svg width="20" height="12" viewBox="0 0 22 12" style="display:block;margin:5px auto 0;">
+              <defs><marker id="ah" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto"><polygon points="0 0,6 2.5,0 5" fill="#9ca3af"/></marker></defs>
+              <line x1="2" y1="6" x2="18" y2="6" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ah)"/>
+            </svg>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em;">Induced Q-Target</div>
+          <div style="position:relative;">
+            <canvas id="compChart"></canvas>
+            <span id="comp-label-0" class="chart-math-label" style="color:#334155;">$1$</span>
+            <span id="comp-label-1" class="chart-math-label" style="color:#d97706;">$2p_y - p_y^2$</span>
+            <span id="comp-label-2" class="chart-math-label" style="color:#334155;">$0$</span>
+            <span id="comp-label-3" class="chart-math-label" style="color:#d97706;">$(1-p_y)\,p_k$</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <p style="font-size:11px;color:#b0b8c4;text-align:center;margin-top:8px;margin-bottom:0;font-style:italic;">
+        x-axis = current model probability on the token of interest: $p_y$ for the observed token (solid), $p_k$ for other tokens (dashed).
+      </p>
+
+      <!-- Interpretation boxes -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
+
+        <!-- SFT card -->
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-top:3px solid #334155;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="width:16px;height:3px;background:#334155;display:inline-block;border-radius:2px;"></span>
+            <span style="font-size:11.5px;font-weight:700;color:#334155;letter-spacing:.04em;text-transform:uppercase;">SFT</span>
+          </div>
+          <p style="font-size:12px;font-weight:700;color:#1e293b;line-height:1.4;">
+            Constant updates
+          </p>
+          <p style="font-size:11.5px;color:#64748b;line-height:1.55;">
+            Gradient pulls toward $y_t$ and suppresses all $k$ with <em>fixed</em> strength, no matter how certain the model already is.
+          </p>
+          <div style="background:#eef2f7;border-radius:6px;padding:8px 10px;font-size:11.5px;line-height:1.5;margin-top:auto;">
+            <span style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px;">Q-target</span>
+            <span style="color:#334155;font-weight:700;">Always $\delta_{y_t}$</span><span style="color:#64748b;"> (full probability mass on the observed token)</span>
+          </div>
+        </div>
+
+        <!-- p-loss card -->
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-top:3px solid #d97706;border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:7px;">
+            <span style="width:16px;height:3px;background:#d97706;display:inline-block;border-radius:2px;"></span>
+            <span style="font-size:11.5px;font-weight:700;color:#b45309;letter-spacing:.04em;text-transform:uppercase;">p-loss</span>
+          </div>
+          <p style="font-size:12px;font-weight:700;color:#78350f;line-height:1.4;">
+            Confidence-scaled updates
+          </p>
+          <p style="font-size:11.5px;color:#92400e;line-height:1.55;">
+            Gradient scales with $p_y$: near-zero when uncertain ($p_y \approx 0$), approaches standard SFT strength as $p_y \to 1$.
+          </p>
+          <div style="background:#fef9c3;border-radius:6px;padding:8px 10px;font-size:11.5px;line-height:1.5;margin-top:auto;">
+            <span style="font-size:10px;font-weight:700;color:#d4a55b;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:3px;">Q-target</span>
+            <span style="color:#b45309;font-weight:700;">$p_y \to 0$: $Q \to p$</span><span style="color:#92400e;"> (no change); </span><span style="color:#b45309;font-weight:700;">$p_y \to 1$: $Q \to \delta_{y_t}$</span><span style="color:#92400e;"> (SFT)</span>
+          </div>
+        </div>
+
+      <!-- </div>
+      <p style="font-size:11.5px;color:#9ca3af;margin-top:10px;line-height:1.6;font-style:italic;">
+        Drag $p_y$ to see how the Q-target shifts. p-loss leaves the distribution nearly unchanged when the model is uncertain, and converges to one-hot SFT behavior when confident.
+      </p> -->
+    </div>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━━━━━━ Q-TARGET FRAMEWORK ━━━━━━━━━━━━━━━ -->
+<section>
+  <div class="section-tag">Framework</div>
+  <h2 class="section-title">Relax one-hot supervision by modeling label uncertainty</h2>
+  <p class="section-subtitle">We introduce a two-parameter target distribution that separates label trust from residual probability allocation.</p>
+
+  <p>We replace the rigid one-hot target with a mixture distribution $Q_t$ controlled by two explicit design choices:</p>
+
+  <div class="eq-block">
+    $$Q_t = \gamma_t \,\delta_{y_t} + (1 - \gamma_t)\,\tilde{\pi}_t$$
+  </div>
+
+  <table class="design-table" style="margin-top:24px;">
+    <thead>
+      <tr>
+        <th>Component</th>
+        <th>Question it answers</th>
+        <th>Effect</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>$\gamma_t \in [0,1]$</strong></td>
+        <td>How much should we trust the observed token $y_t$?</td>
+        <td>Controls imitation strength</td>
+      </tr>
+      <tr>
+        <td><strong>$\tilde{\pi}_t \in \Delta^{|\mathcal{V}|}$</strong></td>
+        <td>Where should the remaining $(1-\gamma_t)$ mass go?</td>
+        <td>Shapes alternative supervision</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:20px;">The training objective under $Q_t$ decomposes cleanly:</p>
+  <div class="eq-block">
+    $$\mathcal{L}_Q(\theta) = \gamma_t \underbrace{\text{CE}(\delta_{y_t},\, \pi_\theta)}_{\text{imitate } y_t} + (1-\gamma_t) \underbrace{\text{CE}(\tilde\pi_t,\, \pi_\theta)}_{\text{match alternatives}}$$
+  </div>
+  <p>This perspective shows that SFT training is always balancing two forces — imitation of the label and matching of a residual distribution. Standard SFT simply sets $\gamma_t = 1$, collapsing the second term entirely.</p>
+</section>
+
+<!-- ━━━━━━━━━━━━━━━ UNIFYING VIEW ━━━━━━━━━━━━━━━ -->
+<section>
+  <div class="section-tag">Unifying View</div>
+  <h2 class="section-title">Existing SFT variants are implicit Q-target designs</h2>
+  <p class="section-subtitle">Viewed through the Q-target lens, seemingly different methods differ only in how they specify $\gamma_t$ and $\tilde\pi_t$.</p>
+
+  <table class="design-table">
+    <thead>
+      <tr>
+        <th>Method</th>
+        <th>Category</th>
+        <th>$\gamma_t$</th>
+        <th>$\tilde\pi_t$</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Standard SFT</strong></td>
+        <td><span class="method-tag tag-gray">One-hot</span></td>
+        <td>$1$</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><strong>DFT, Beyond-log, ProFiT</strong></td>
+        <td><span class="method-tag tag-amber">Label Trust</span></td>
+        <td>$p_y = \pi_\theta(y_t\mid x_t)$</td>
+        <td>$\text{sg}[\pi_\theta]$ (no gradient)</td>
+      </tr>
+      <tr>
+        <td><strong>EAFT, iw-SFT, CFT</strong></td>
+        <td><span class="method-tag tag-amber">Label Trust</span></td>
+        <td>Entropy / quality weight $w_t$</td>
+        <td>$\text{sg}[\pi_\theta]$ (no gradient)</td>
+      </tr>
+      <tr>
+        <td><strong>Label Smoothing</strong></td>
+        <td><span class="method-tag tag-blue">Residual Dist.</span></td>
+        <td>$1 - \epsilon$</td>
+        <td>$\text{Unif}(\mathcal{V})$</td>
+      </tr>
+      <tr>
+        <td><strong>KL-anchoring / Proximal SFT</strong></td>
+        <td><span class="method-tag tag-blue">Residual Dist.</span></td>
+        <td>implicit</td>
+        <td>$\pi_\text{ref}$</td>
+      </tr>
+      <tr>
+        <td><strong>Knowledge Distillation</strong></td>
+        <td><span class="method-tag tag-purple">Teacher</span></td>
+        <td>$1 - c$ (fixed)</td>
+        <td>$\pi_T$ (fixed, full teacher)</td>
+      </tr>
+      <tr class="highlight-row">
+        <td><strong>Target-SFT (ours)</strong></td>
+        <td><span class="method-tag tag-green">Both</span></td>
+        <td>$p_y$ (adaptive)</td>
+        <td>$\tilde\pi_t^\text{guided} \propto \pi_\theta^{1-\eta}\pi_T^\eta$</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 2D Method Map -->
+  <div class="method-map-wrap">
+    <div style="font-size:13px;font-weight:600;color:var(--muted);text-align:center;margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em;">Method Design Space</div>
+    <svg id="methodMap" width="100%" viewBox="0 0 500 320" style="max-width:500px;font-family:inherit;">
+      <!-- Grid -->
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#9ca3af"/>
+        </marker>
+      </defs>
+      <!-- Axes -->
+      <line x1="60" y1="260" x2="460" y2="260" stroke="#d1d5db" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <line x1="60" y1="260" x2="60" y2="30" stroke="#d1d5db" stroke-width="1.5" marker-end="url(#arrowhead)"/>
+      <!-- Axis labels -->
+      <text x="260" y="295" text-anchor="middle" fill="#6b7280" font-size="12">Label trust design (how to set γ)</text>
+      <text x="22" y="150" text-anchor="middle" fill="#6b7280" font-size="12" transform="rotate(-90,22,150)">Residual dist. design (how to set π̃)</text>
+      <!-- Grid dots -->
+      <line x1="60" y1="60" x2="455" y2="60" stroke="#f3f4f6" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="60" y1="160" x2="455" y2="160" stroke="#f3f4f6" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="180" y1="30" x2="180" y2="260" stroke="#f3f4f6" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="300" y1="30" x2="300" y2="260" stroke="#f3f4f6" stroke-width="1" stroke-dasharray="4,4"/>
+      <line x1="420" y1="30" x2="420" y2="260" stroke="#f3f4f6" stroke-width="1" stroke-dasharray="4,4"/>
+
+      <!-- Methods -->
+      <!-- Standard SFT: high γ=1 (right), no residual (bottom) -->
+      <circle cx="420" cy="248" r="9" fill="#94a3b8"/>
+      <text x="420" y="238" text-anchor="middle" fill="#64748b" font-size="11" font-weight="600">SFT</text>
+
+      <!-- p-loss / DFT: adaptive γ, residual=student prior (bottom) -->
+      <circle cx="300" cy="248" r="9" fill="#f59e0b"/>
+      <text x="300" y="238" text-anchor="middle" fill="#92400e" font-size="11" font-weight="600">p-loss</text>
+
+      <!-- Label smoothing: high γ, residual=uniform (mid) -->
+      <circle cx="390" cy="160" r="9" fill="#818cf8"/>
+      <text x="390" y="150" text-anchor="middle" fill="#4338ca" font-size="11" font-weight="600">Label smooth</text>
+
+      <!-- KL anchor: implicit γ, residual=ref (mid-high) -->
+      <circle cx="260" cy="130" r="9" fill="#a78bfa"/>
+      <text x="260" y="120" text-anchor="middle" fill="#5b21b6" font-size="11" font-weight="600">KL-anchor</text>
+
+      <!-- Distillation: fixed γ, full teacher (top) -->
+      <circle cx="180" cy="75" r="9" fill="#6366f1"/>
+      <text x="180" y="65" text-anchor="middle" fill="#3730a3" font-size="11" font-weight="600">Distillation</text>
+
+      <!-- Target-SFT: adaptive γ, teacher-guided residual (top-right area) -->
+      <circle cx="330" cy="70" r="12" fill="#059669" stroke="#fff" stroke-width="2"/>
+      <text x="330" y="56" text-anchor="middle" fill="#065f46" font-size="12" font-weight="700">Target-SFT</text>
+      <text x="330" y="42" text-anchor="middle" fill="#065f46" font-size="10">(ours)</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━━━━━━ TARGET-SFT ━━━━━━━━━━━━━━━ -->
+<section>
+  <div class="section-tag">Method</div>
+  <h2 class="section-title">Design both branches of the target</h2>
+  <p class="section-subtitle">Target-SFT instantiates the Q-target framework by making principled choices for both $\gamma_t$ and $\tilde\pi_t$.</p>
+
+  <div class="method-card featured">
+    <div class="method-card-title">
+      <span class="method-tag tag-green">Target-SFT</span>
+      <span style="font-size:13px;color:var(--green);">Adaptive fallback supervision</span>
+    </div>
+    <div class="eq-block" style="background:#fff;">
+      $$Q_t^\text{TARGET} = p_y\,\delta_{y_t} + (1-p_y)\,\tilde{\pi}_t^\text{guided}$$
+    </div>
+
+    <div class="choice-grid">
+      <div class="choice-item">
+        <div class="choice-label">Label Trust</div>
+        <div class="choice-eq">$$\gamma_t = p_y = \pi_\theta(y_t \mid x_t)$$</div>
+        <div class="choice-interp">Model's own probability on $y_t$ as a proxy for label reliability. High confidence → high trust.</div>
+      </div>
+      <div class="choice-item">
+        <div class="choice-label">Residual Distribution</div>
+        <div class="choice-eq">$$\tilde{\pi}_t^\text{guided}(a) \propto \pi_\theta(a)^{1-\eta}\,\pi_T(a)^\eta$$</div>
+        <div class="choice-interp">Geometric interpolation between student and teacher. $\eta \in [0,1]$ controls teacher intensity.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:700;margin:24px 0 12px;">Adaptive behavior</h3>
+  <div class="intuition-grid">
+    <div class="intuition-box intuition-high">
+      <strong>High $p_y$ (model is confident)</strong>
+      Objective approaches standard SFT. The model already assigns high probability to $y_t$, so we trust the demonstrated token and imitate it closely.
+    </div>
+    <div class="intuition-box intuition-low">
+      <strong>Low $p_y$ (model is uncertain)</strong>
+      Imitation weakens; teacher-guided residual gets higher weight. The teacher provides corrective fallback supervision toward better alternatives.
+    </div>
+  </div>
+
+  <p style="margin-top:16px;font-size:15px;">Unlike full distillation — which uses the teacher as a fixed, uniform replacement for the label — Target-SFT uses the teacher <em>selectively</em>, scaling its influence by $1-p_y$. This avoids over-relying on the teacher when the demonstrated token is already well-supported.</p>
+</section>
+
+<!-- ━━━━━━━━━━━━━━━ RESULTS ━━━━━━━━━━━━━━━ -->
+<section>
+  <div class="section-tag">Experiments</div>
+  <h2 class="section-title">Target-SFT improves reasoning performance</h2>
+  <p class="section-subtitle">Evaluated with Average@16 accuracy across 10 dataset-model settings on math and medical reasoning benchmarks.</p>
+
+  <ul class="key-bullets" style="margin-bottom:28px;">
+    <li><span class="bullet-icon" style="background:var(--green);">✓</span><span>Target-SFT achieves the <strong>best Average@16</strong> across all evaluated settings.</span></li>
+    <li><span class="bullet-icon" style="background:var(--green);">✓</span><span>On math reasoning, Target-SFT improves over both standard SFT and p-loss in every case.</span></li>
+    <li><span class="bullet-icon" style="background:var(--green);">✓</span><span>On medical reasoning, Target-SFT remains strongest even when p-loss is less reliable than standard SFT.</span></li>
+  </ul>
+
+  <div class="chart-wrap" style="padding:16px 16px 12px;">
+    <img src="../img/publication_preview/all_avg.png"
+         alt="Performance summary: Average@16 accuracy across all 10 dataset-model settings"
+         style="width:100%;height:auto;display:block;border-radius:6px;">
+    <p style="font-size:12px;color:var(--muted);margin-top:10px;text-align:center;line-height:1.5;">
+      Average@16 accuracy across all 10 dataset-model settings (NuminaMath-CoT, OpenR1-15k, Medical). Target-SFT (bold blue) consistently achieves the highest accuracy.
+    </p>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━━━━━━ TAKEAWAYS ━━━━━━━━━━━━━━━ -->
+<section>
+  <div class="section-tag">Summary</div>
+  <h2 class="section-title">What should readers take away?</h2>
+
+  <div class="takeaway-grid">
+    <div class="takeaway-card">
+      <div class="takeaway-num">01</div>
+      <div class="takeaway-text">SFT is fundamentally a target distribution design problem, not just a choice of loss function.</div>
+    </div>
+    <div class="takeaway-card">
+      <div class="takeaway-num">02</div>
+      <div class="takeaway-text">Standard SFT is the one-hot special case: it implicitly assumes every token is the uniquely ideal target.</div>
+    </div>
+    <div class="takeaway-card">
+      <div class="takeaway-num">03</div>
+      <div class="takeaway-text">Existing variants differ in how they specify label trust $\gamma_t$ or the residual distribution $\tilde\pi_t$ — often implicitly.</div>
+    </div>
+    <div class="takeaway-card" style="border-color:var(--green);background:var(--green-light);">
+      <div class="takeaway-num" style="color:var(--green);">04</div>
+      <div class="takeaway-text">Target-SFT designs both branches explicitly and achieves consistent improvements across diverse settings.</div>
+    </div>
+  </div>
+
+  <div class="callout callout-green" style="margin-top:16px;">
+    Instead of asking only <em>which loss should we use?</em>, we ask: <strong>what target distribution should the model learn from each token?</strong>
+  </div>
+</section>
+
+<!-- ━━━━━━━━━━━━━━━ BIBTEX ━━━━━━━━━━━━━━━ -->
+<section id="bibtex">
+  <div class="section-tag">Citation</div>
+  <h2 class="section-title">BibTeX</h2>
+  <pre style="background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:20px;font-size:13px;overflow-x:auto;line-height:1.6;">@article{xie2026targetsft,
+  title     = {A Unifying Lens on Supervised Fine-Tuning Through Target Distribution Design},
+  author    = {Tong Xie, Yuanhao Ban, Yunqi Hong, Sohyun An, Yihang Chen, Cho-Jui Hsieh},
+  journal   = {arXiv},
+  year      = {2026}
+}</pre>
+</section>
+
+</div><!-- /page-wrap -->
+
+<footer>
+  <div class="page-wrap">
+    <!-- Target-SFT &nbsp;·&nbsp; NeurIPS 2026 &nbsp;·&nbsp; -->
+    Target-SFT &nbsp;·&nbsp; May 2026 &nbsp;·&nbsp;
+    <a href="https://txie1.github.io">txie1.github.io</a>
+  </div>
+</footer>
+
+<script>
+/* ─── One-hot bar chart ─── */
+const onehotCtx = document.getElementById('onehotChart').getContext('2d');
+const vocab = ['...', 'the', 'a', 'is', 'y_t', 'are', 'it', 'was', '...'];
+const onehotData = [0,0,0,0,1,0,0,0,0];
+const onehotColors = vocab.map((_, i) => i === 4 ? '#2563eb' : '#e2e8f0');
+new Chart(onehotCtx, {
+  type: 'bar',
+  data: {
+    labels: vocab,
+    datasets: [{
+      data: onehotData,
+      backgroundColor: onehotColors,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: false }
+    },
+    scales: {
+      y: { min: 0, max: 1.2, ticks: { stepSize: 0.5 }, title: { display: true, text: 'Q(k)', font: { size: 11 } }, grid: { color: '#f3f4f6' } },
+      x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+    },
+    animation: false
+  }
+});
+
+/* ─── Comparison chart: SFT vs p-loss (both token types, interactive) ─── */
+const pyVals = Array.from({ length: 101 }, (_, i) => i / 100);
+
+// Q-target values
+const sftCorrectData     = pyVals.map(() => 1);
+const sftIncorrectData   = pyVals.map(() => 0);
+const plossCorrectData   = pyVals.map(py => 2 * py - py * py);
+const plossIncorrectData = pyVals.map(py => (1 - py) * (1 - py));
+
+// Gradient values g_k = ∂L/∂z_k (simplified 2-class: p_k = 1 − p_y)
+// Derived from Q_k = p_k − g_k  →  g_k = p_k − Q_k
+const gradSFTCorrect     = pyVals.map(py => 1 - py);           // −g(y) for SFT:   1−p_y
+const gradSFTIncorrect   = buildGradSFTOtherLine(0.3);         // −g(k) for SFT:   −p_k  (domain-restricted, init py=0.3)
+const gradPlossCorrect   = pyVals.map(py => py * (1 - py));    // −g(y) for p-loss: p_y(1−p_y)
+const gradPlossIncorrect = buildGradOtherLine(0.3);            // −g(k) for p-loss: −p_y·p_k (domain-restricted, init py=0.3)
+
+// Plugin: vertical indicator line + colored dots at the current slider position
+const vertLinePlugin = {
+  id: 'vertLine',
+  afterDraw(chart, args, opts) {
+    const idx = opts.xIdx;
+    if (idx === undefined || idx === null) return;
+    const { ctx, chartArea, scales } = chart;
+    const meta0 = chart.getDatasetMeta(0);
+    if (!meta0.data || !meta0.data[idx]) return;
+    const xPx = meta0.data[idx].x;
+
+    ctx.save();
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 4]);
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(xPx, chartArea.top);
+    ctx.lineTo(xPx, chartArea.bottom);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    const excludes = opts.excludeDatasets || [];
+    chart.data.datasets.forEach((ds, i) => {
+      if (excludes.includes(i)) return;
+      const val = ds.data[idx];
+      if (val === undefined || val === null) return;
+      const yPx = scales.y.getPixelForValue(val);
+      ctx.beginPath();
+      ctx.arc(xPx, yPx, 5, 0, Math.PI * 2);
+      ctx.fillStyle  = ds.borderColor;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+};
+
+// Plugin: position absolutely-placed HTML/KaTeX label elements over each curve
+const curveLabelPlugin = {
+  id: 'curveLabel',
+  afterDraw(chart, args, opts) {
+    if (!opts || !opts.items) return;
+    const { scales } = chart;
+    opts.items.forEach(({ dsIdx, xIdx, elId, dx = 7, dy = 0 }) => {
+      if (!elId) return;
+      const el = document.getElementById(elId);
+      if (!el) return;
+      const meta = chart.getDatasetMeta(dsIdx);
+      if (!meta.data || !meta.data[xIdx]) { el.style.display = 'none'; return; }
+      const val = chart.data.datasets[dsIdx].data[xIdx];
+      if (val == null) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      el.style.left = (meta.data[xIdx].x + dx) + 'px';
+      el.style.top  = (scales.y.getPixelForValue(val) + dy) + 'px';
+    });
+  }
+};
+
+// Plugin: filled dot on observed-token curves tracking the slider position
+const slideDotPlugin = {
+  id: 'slideDot',
+  afterDraw(chart, args, opts) {
+    if (!opts || opts.xIdx === undefined) return;
+    const { ctx, scales } = chart;
+    const idx = opts.xIdx;
+    (opts.datasets || []).forEach(({ dsIdx, color }) => {
+      const meta = chart.getDatasetMeta(dsIdx);
+      if (!meta.data || !meta.data[idx]) return;
+      const val = chart.data.datasets[dsIdx].data[idx];
+      if (val == null) return;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(meta.data[idx].x, scales.y.getPixelForValue(val), 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = color;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+    });
+  }
+};
+
+Chart.register(vertLinePlugin, curveLabelPlugin, slideDotPlugin);
+
+/* Gradient chart */
+const gradChart = new Chart(
+  document.getElementById('gradChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: pyVals.map(v => v.toFixed(2)),
+    datasets: [
+      { label: 'SFT g(y)',     data: gradSFTCorrect,     borderColor: '#475569', borderWidth: 2.5, pointRadius: 0, tension: 0,   borderDash: [] },
+      { label: 'SFT g(k)',     data: gradSFTIncorrect,   borderColor: '#475569', borderWidth: 2.5, pointRadius: 0, tension: 0,   borderDash: [7, 4] },
+      { label: 'p-loss g(y)',  data: gradPlossCorrect,   borderColor: '#d97706', borderWidth: 2.5, pointRadius: 0, tension: 0.3, borderDash: [] },
+      { label: 'p-loss g(k)',  data: gradPlossIncorrect, borderColor: '#d97706', borderWidth: 2.5, pointRadius: 0, tension: 0,   borderDash: [7, 4] }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1,
+    animation: false,
+    plugins: {
+      legend:  { display: false },
+      tooltip: { enabled: false },
+      slideDot: {
+        xIdx: 30,
+        datasets: [
+          { dsIdx: 0, color: '#475569' },
+          { dsIdx: 2, color: '#d97706' }
+        ]
+      },
+      curveLabel: {
+        items: [
+          { dsIdx: 0, xIdx: 25, elId: 'grad-label-0', dx: 7, dy: -16 },
+          { dsIdx: 2, xIdx: 25, elId: 'grad-label-2', dx: 7, dy: -14 },
+          { dsIdx: 3, xIdx: 60, elId: 'grad-label-3', dx: 7, dy:  14 },
+          { dsIdx: 1, xIdx: 60, elId: 'grad-label-1', dx: 7, dy:  16 }
+        ]
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Current probability', font: { size: 10.5 } },
+        min: '0.00', max: '1.00', offset: false,
+        ticks: { callback: (v, i) => i % 20 === 0 ? (i / 100).toFixed(1) : null, font: { size: 10 } },
+        grid:  { color: 'rgba(0,0,0,0.04)' }
+      },
+      y: {
+        min: -1, max: 1,
+        title: { display: true, text: '−∂L/∂z', font: { size: 11 } },
+        ticks: { stepSize: 0.5 },
+        grid: {
+          color:     ctx => ctx.tick.value === 0 ? '#d1d5db' : 'rgba(0,0,0,0.04)',
+          lineWidth: ctx => ctx.tick.value === 0 ? 1.5 : 1
+        }
+      }
+    }
+  }
+});
+
+/* Helpers: other-token gradient lines, domain-restricted to p_k ∈ [0, 1−p_y] */
+function buildGradSFTOtherLine(py) {
+  const maxPk = 1 - py;
+  return pyVals.map(pk => pk <= maxPk + 0.004 ? -pk : null);
+}
+function buildGradOtherLine(py) {
+  const maxPk = 1 - py;
+  return pyVals.map(pk => pk <= maxPk + 0.004 ? -py * pk : null);
+}
+
+/* Helper: SFT other-token Q line Q = 0 for p_k ∈ [0, 1-p_y] */
+function buildQSFTOtherLine(py) {
+  const maxPk = 1 - py;
+  return pyVals.map(pk => pk <= maxPk + 0.004 ? 0 : null);
+}
+
+/* Helper: other-token Q line Q = (1-py)*pk for pk in [0, 1-py] */
+function buildOtherLine(py) {
+  const slope = 1 - py;
+  return pyVals.map(pk => pk <= slope + 0.004 ? slope * pk : null);
+}
+
+/* Q-target: combined chart — y_t curve + other-token k rotating line */
+const compChart = new Chart(
+  document.getElementById('compChart').getContext('2d'), {
+  type: 'line',
+  data: {
+    labels: pyVals.map(v => v.toFixed(2)),
+    datasets: [
+      { label: 'SFT Q(y)',
+        data: sftCorrectData,
+        borderColor: '#334155', borderWidth: 4.5, pointRadius: 0, tension: 0, borderDash: [] },
+      { label: 'p-loss Q(y)',
+        data: plossCorrectData,
+        borderColor: '#d97706', borderWidth: 2.5, pointRadius: 0, tension: 0.3, borderDash: [] },
+      { label: 'SFT Q(k)',
+        data: buildQSFTOtherLine(0.3),
+        borderColor: '#334155', borderWidth: 4.5, pointRadius: 0, tension: 0, borderDash: [7, 4] },
+      { label: 'p-loss Q(k)',
+        data: buildOtherLine(0.3),
+        borderColor: '#d97706',
+        borderWidth: 2.5, pointRadius: 0, tension: 0,
+        fill: false, spanGaps: false, borderDash: [6, 3] },
+      { label: 'Q = p',
+        data: pyVals.map(v => v),
+        borderColor: 'rgba(156,163,175,0.35)', borderWidth: 1,
+        pointRadius: 0, tension: 0, borderDash: [2, 3] }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1,
+    animation: false,
+    plugins: {
+      legend:  { display: false },
+      tooltip: { enabled: false },
+      slideDot: {
+        xIdx: 30,
+        datasets: [
+          { dsIdx: 0, color: '#334155' },
+          { dsIdx: 1, color: '#d97706' }
+        ]
+      },
+      curveLabel: {
+        items: [
+          { dsIdx: 0, xIdx: 20, elId: 'comp-label-0', dx: 7, dy: -14 },
+          { dsIdx: 1, xIdx: 20, elId: 'comp-label-1', dx: 7, dy:  14 },
+          { dsIdx: 2, xIdx: 62, elId: 'comp-label-2', dx: 7, dy: -12 },
+          { dsIdx: 3, xIdx: 30, elId: 'comp-label-3', dx: 7, dy:  14 }
+        ]
+      }
+    },
+    scales: {
+      x: {
+        title: { display: true, text: 'Current probability', font: { size: 10 } },
+        min: '0.00', max: '1.00', offset: false,
+        ticks: { callback: (v, i) => i % 20 === 0 ? (i / 100).toFixed(1) : null, font: { size: 9 } },
+        grid:  { color: 'rgba(0,0,0,0.04)' }
+      },
+      y: {
+        min: 0, max: 1,
+        title: { display: true, text: 'Q', font: { size: 10 } },
+        ticks: { stepSize: 0.5 },
+        grid:  { color: 'rgba(0,0,0,0.04)' }
+      }
+    }
+  }
+});
+
+function onPySlider(val) {
+  const idx = parseInt(val);
+  const py  = idx / 100;
+
+  document.getElementById('pyVal').textContent = py.toFixed(2);
+
+  // Update other-token Q lines (domain-restricted) + observed dot position
+  compChart.data.datasets[2].data = buildQSFTOtherLine(py);
+  compChart.data.datasets[3].data = buildOtherLine(py);
+  compChart.options.plugins.slideDot.xIdx = idx;
+  compChart.update('none');
+
+  // Update other-token gradient lines (domain-restricted) + observed dot position
+  gradChart.data.datasets[1].data = buildGradSFTOtherLine(py);
+  gradChart.data.datasets[3].data = buildGradOtherLine(py);
+  gradChart.options.plugins.slideDot.xIdx = idx;
+  gradChart.update('none');
+
+  // Pulse the connector badge
+  const badge = document.getElementById('derivesBadge');
+  if (badge) {
+    badge.classList.remove('pulse');
+    void badge.offsetWidth;
+    badge.classList.add('pulse');
+  }
+}
+
+onPySlider(30);
+</script>
+
+</body>
+</html>

@@ -5,4 +5,4 @@ inline: true
 related_posts: false
 ---
 
-Our work ***Data Attribution for Diffusion Models: Timestep-induced Bias in Influence Estimation*** is accepted at `TMLR 2024`!
+Our work ***Data Attribution for Diffusion Models: Timestep-induced Bias in Influence Estimation*** is accepted to `TMLR 2024`!

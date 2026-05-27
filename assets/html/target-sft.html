@@ -95,11 +95,16 @@ a:hover { text-decoration: underline; }
   margin-bottom: 8px;
 }
 .hero-authors span { color: var(--text); font-weight: 500; }
+.hero-authors sup { color: var(--muted); font-weight: 400; font-size: 0.65em; }
 .hero-venue {
   font-size: 14px;
   color: var(--muted);
   margin-bottom: 28px;
 }
+.hero-venue sup { color: var(--muted); font-weight: 400; font-size: 0.7em; }
+.hero-venue .affil { display: inline-flex; align-items: center; gap: 6px; }
+.hero-venue .affil-logo { height: 22px; width: auto; vertical-align: middle; }
+.hero-venue .affil-logo[alt="UCLA"] { height: 15px; }
 .hero-links {
   display: flex;
   gap: 12px;
@@ -853,11 +858,15 @@ tr.expandable.highlight-row.open td:first-child { border-left: none !important; 
   <!-- <h1>A Unifying Lens on Supervised Fine-Tuning Through Target Distribution Design</h1> -->
   <h1>A Unifying Lens on SFT Through Target Distribution Design</h1>
   <p class="hero-authors">
-    <span><a href="https://txie1.github.io/">Tong Xie</a></span> &nbsp;·&nbsp; <span><a href="https://banyuanhao.github.io/">Yuanhao Ban</a></span> &nbsp;·&nbsp;
-    <span><a href="https://yq-hong.github.io/">Yunqi Hong</a></span> &nbsp;·&nbsp; <span><a href="https://cownowan.github.io/">Sohyun An</a></span> &nbsp;·&nbsp;
-    <span><a href="https://yhangchen.github.io/">Yihang Chen</a></span> &nbsp;·&nbsp; <span><a href="https://web.cs.ucla.edu/~chohsieh/">Cho-Jui Hsieh</a></span>
+    <span><a href="https://txie1.github.io/">Tong Xie</a><sup>1</sup></span> &nbsp;·&nbsp; <span><a href="https://banyuanhao.github.io/">Yuanhao Ban</a><sup>1,2</sup></span> &nbsp;·&nbsp;
+    <span><a href="https://yq-hong.github.io/">Yunqi Hong</a><sup>1</sup></span> &nbsp;·&nbsp; <span><a href="https://cownowan.github.io/">Sohyun An</a><sup>1</sup></span> &nbsp;·&nbsp;
+    <span><a href="https://yhangchen.github.io/">Yihang Chen</a><sup>1</sup></span> &nbsp;·&nbsp; <span><a href="https://web.cs.ucla.edu/~chohsieh/">Cho-Jui Hsieh</a><sup>1,2</sup></span>
   </p>
-  <p class="hero-venue">University of California, Los Angeles (UCLA)</p>
+  <p class="hero-venue">
+    <span class="affil"><sup>1</sup><img class="affil-logo" src="../img/logos/ucla.png" alt="UCLA">University of California, Los Angeles (UCLA)</span>
+    &nbsp;·&nbsp;
+    <span class="affil"><sup>2</sup><img class="affil-logo" src="../img/logos/arena.png" alt="Arena">Arena</span>
+  </p>
   <div class="hero-links">
     <a class="btn btn-outline" href="#" aria-label="Paper">
       <svg width="16" height="16" viewBox="0 0 100 100" fill="none" stroke-linecap="round" aria-hidden="true">
@@ -869,7 +878,7 @@ tr.expandable.highlight-row.open td:first-child { border-left: none !important; 
     </a>
     <a class="btn btn-outline" href="#" aria-label="Source code on GitHub">
       <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.01c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.73-1.52-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.18-3.1-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18.91-.25 1.89-.38 2.86-.39.97.01 1.95.14 2.86.39 2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.84 1.18 3.1 0 4.43-2.69 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.18c0 .31.21.68.8.56 4.56-1.53 7.84-5.83 7.84-10.91C23.5 5.65 18.35.5 12 .5z"/></svg>
-      Code
+      (Coming soon)
     </a>
   </div>
 
@@ -1616,12 +1625,17 @@ const curveLabelPlugin = {
       const el = document.getElementById(elId);
       if (!el) return;
       const meta = chart.getDatasetMeta(dsIdx);
-      if (!meta.data || !meta.data[xIdx]) { el.style.display = 'none'; return; }
-      const val = chart.data.datasets[dsIdx].data[xIdx];
-      if (val == null) { el.style.display = 'none'; return; }
+      const data = chart.data.datasets[dsIdx].data;
+      if (!meta.data || !data) { el.style.display = 'none'; return; }
+      // If the configured anchor is outside the curve's current domain (null due
+      // to domain restriction on "other-token" lines), walk back to the last
+      // valid point so the label stays pinned to the visible curve.
+      let i = Math.min(xIdx, data.length - 1);
+      while (i >= 0 && (data[i] == null || !meta.data[i])) i--;
+      if (i < 0) { el.style.display = 'none'; return; }
       el.style.display = 'block';
-      el.style.left = (meta.data[xIdx].x + dx) + 'px';
-      el.style.top  = (scales.y.getPixelForValue(val) + dy) + 'px';
+      el.style.left = (meta.data[i].x + dx) + 'px';
+      el.style.top  = (scales.y.getPixelForValue(data[i]) + dy) + 'px';
     });
   }
 };
@@ -1776,7 +1790,7 @@ const compChart = new Chart(
       },
       curveLabel: {
         items: [
-          { dsIdx: 0, xIdx: 20, elId: 'comp-label-0', dx: 7, dy: -14 },
+          { dsIdx: 0, xIdx: 20, elId: 'comp-label-0', dx: 7, dy: 15 },
           { dsIdx: 1, xIdx: 20, elId: 'comp-label-1', dx: 7, dy:  14 },
           { dsIdx: 2, xIdx: 62, elId: 'comp-label-2', dx: 7, dy: -12 },
           { dsIdx: 3, xIdx: 30, elId: 'comp-label-3', dx: 7, dy:  14 }

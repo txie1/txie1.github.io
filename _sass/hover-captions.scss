@@ -1,0 +1,51 @@
+// Style experiment: More page captions fade in over the bottom of a photo on hover.
+// Touch screens can't hover, so there the captions stay visible.
+// Switched on by `style_hover_captions: true` in _config.yml; set it to false to hide captions again.
+
+.photo-grid figure {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.photo-grid figcaption {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 28px 12px 9px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0));
+  color: #fff;
+  font-size: 0.95rem;
+  line-height: 1.3;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.photo-grid figure:hover figcaption,
+.photo-grid figure:focus-within figcaption {
+  opacity: 1;
+  transform: none;
+}
+
+@media (hover: none) {
+  .photo-grid figcaption {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+// Phones: the 2 × 2 photos are small, so a smaller caption that covers less of each photo.
+@media print, screen and (max-width: 480px) {
+  .photo-grid figure {
+    border-radius: 6px;
+  }
+
+  .photo-grid figcaption {
+    padding: 18px 8px 5px;
+    font-size: 0.78rem;
+  }
+}

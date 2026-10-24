@@ -1,0 +1,43 @@
+// Style experiment: a round magnifying loupe follows the mouse over the photo collages
+// (`figure.magnify`, see assets/js/magnifier.js). Mouse only; touch screens keep tap-to-open.
+// Switched on by `style_magnifier: true` in _config.yml; set it to false to remove it.
+
+.photo-grid figure.magnify {
+  position: relative;
+  overflow: visible; // the loupe and the hidden figures' bubbles may poke past the photo's edge
+  cursor: zoom-in;
+}
+
+// Bubble of a hidden walker, above the loupe while the walker is in view (assets/js/magnifier.js).
+// Its pixel look (.pixel-bubble) comes from _sass/sunset.scss.
+.photo-grid .egg-bubble {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, calc(-100% - 12px));
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+.photo-grid .egg-bubble.on {
+  opacity: 1;
+}
+
+.photo-grid .loupe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 150px;
+  height: 150px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  background-repeat: no-repeat;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.photo-grid .loupe.on {
+  opacity: 1;
+}

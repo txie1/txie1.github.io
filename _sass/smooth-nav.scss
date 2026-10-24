@@ -1,0 +1,16 @@
+// Style experiment: Home / More swap only the right-hand content (assets/js/nav.js); the content
+// dims for a moment while the other page is fetched. Switched on by `style_smooth_nav: true`.
+
+section {
+  transition: opacity 0.15s ease;
+}
+
+section.swapping {
+  opacity: 0.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  section {
+    transition: none;
+  }
+}

@@ -1,0 +1,482 @@
+// Additions on top of Minimal Light: dated news list and two-column entry rows
+// (experiences, teaching, ...). Imported by both the light and dark-mode styles.
+
+.news-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 22px;
+}
+
+.news-list li {
+  padding: 3px 0;
+}
+
+// Scrolling news list (no frame): assets/js/news.js sizes it to the newest `data-visible` items
+// (the max-height here is only a fallback) and fades the bottom edge while more items remain.
+.news-box {
+  margin: 0 0 22px;
+}
+
+.news-box .news-list {
+  position: relative;
+  margin: 0;
+  max-height: 8em;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-right: 10px;
+}
+
+.news-box .news-list:focus {
+  outline: none;
+}
+
+.news-box .news-list:focus-visible {
+  outline: 2px solid #2a7ab0;
+  outline-offset: 4px;
+}
+
+.news-box .news-list.has-more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 14px), transparent);
+}
+
+.news-list span {
+  color: #043361;
+  display: inline-block;
+  font-weight: 500;
+  min-width: 86px;
+}
+
+.entry-list {
+  margin: 0 0 22px;
+}
+
+.entry-row {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  gap: 16px;
+  border-bottom: 1px solid #eeeeee;
+  padding: 7px 0;
+}
+
+.entry-date {
+  color: #666;
+  font-size: 14px;
+}
+
+// Phones: keep the date beside its item, in a smaller narrow column, with wrapped lines
+// indented under the text (hanging indent) instead of the date taking its own line.
+@media print, screen and (max-width: 480px) {
+  .news-list li {
+    padding-left: 70px; // date column + the space after it, so wrapped lines line up with the text
+    text-indent: -70px;
+  }
+
+  .news-list span {
+    width: 66px;
+    min-width: 0;
+    text-indent: 0;
+    font-size: 0.88em;
+  }
+
+  .entry-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+// Avatar as an uncropped rectangle (portrait photo, square corners) instead of the theme's circle.
+// Block display keeps the photo on its own line.
+.image.avatar {
+  display: block;
+}
+
+.image.avatar img {
+  width: 160px;
+  height: auto;
+  padding: 0;
+  margin: 8px 0 20px; // top edge level with the first heading ("hi there!") on wide screens
+  border-radius: 0;
+}
+
+@media print, screen and (max-width: 1060px) {
+  .image.avatar img {
+    width: 140px;
+    padding: 0;
+    border-radius: 0;
+  }
+}
+
+@media print, screen and (max-width: 480px) {
+  .image.avatar img {
+    width: 120px;
+    padding: 0;
+    border-radius: 0;
+  }
+}
+
+// Publication thumbnails: fixed-width column, height follows each image's own shape
+// (the theme forces a 270x123 box). Selectors outrank publications.css, which loads later.
+.publications ol.bibliography li div.abbr {
+  flex: 0 0 230px;
+  height: auto;
+}
+
+.publications ol.bibliography li img.teaser {
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+  margin: 5px 0;
+}
+
+// Publication note (e.g. "Spotlight"), the theme's red italic; _sass/accent.scss restyles it as a badge.
+.publications ol.bibliography li .links .pub-note {
+  margin-left: 4px;
+  color: #e74d3c;
+  font-style: italic;
+  font-weight: 500;
+}
+
+// Keep the scrollbar's space reserved even on short pages, so the centred layout (and the sidebar)
+// doesn't shift sideways when content changes height.
+html {
+  scrollbar-gutter: stable;
+}
+
+// Links: a deeper blue than the theme's #39c, which is too light to read comfortably on white
+// (4.7:1 contrast instead of 3.2:1). Dark and sunset modes set their own link colours.
+a {
+  color: #2a7ab0;
+}
+
+a:hover {
+  color: #1d5f8c;
+}
+
+// Publications: titles line up with the top of their thumbnails (the theme centres them), so the
+// gaps between entries stay even whatever each thumbnail's height.
+.publications .pub-row {
+  align-items: flex-start;
+}
+
+// Keeps a hyphenated name (e.g. Cho-Jui) on one line; used in _data/publications.yml.
+.nobr {
+  white-space: nowrap;
+}
+
+// My name in author lists: semibold (the theme's <strong> is only medium weight) and darker.
+.publications ol.bibliography li .author strong {
+  font-weight: 600;
+  color: #111;
+}
+
+// Top-right menu: page links plus the light/dark toggle.
+.wrapper {
+  position: relative;
+}
+
+.site-nav {
+  position: absolute;
+  top: 1.6em;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 1.4em;
+  font-size: 1.05rem;
+}
+
+.site-nav a {
+  color: #595959;
+}
+
+.site-nav a:hover,
+.site-nav a.active {
+  color: #043361;
+}
+
+.site-nav a.active {
+  font-weight: 600;
+}
+
+// Reserve each link's bold width (hidden copy of its text), so the menu doesn't shift when the
+// active page changes.
+.site-nav a {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.site-nav a::after {
+  content: attr(data-text);
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+// Fixed-size switch: the moon, sun (and sunset) icons have different widths, so without this
+// the menu links would move whenever the mode changes.
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: #043361;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+// keyboard users still get the focus ring; mouse clicks don't leave a box around the icon
+.theme-toggle:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.theme-toggle .fa-sun {
+  display: none;
+}
+
+// Narrow screens stack the sidebar above the content, so the menu sits above the photo.
+@media print, screen and (max-width: 1060px) {
+  .site-nav {
+    position: static;
+    justify-content: flex-end;
+  }
+}
+
+// Quiet break between the parts of the More page: three small square "pixels", a nod to the
+// pixel figures.
+.divider {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 34px 0 30px;
+  color: #b5bcc8;
+}
+
+.divider i {
+  display: block;
+  width: 4px;
+  height: 4px;
+  background: currentColor;
+}
+
+// Phones: a slim menu bar (links left, mode switch right, hairline below) and a compact profile
+// card (small photo left, name and details beside it) instead of the tall centred sidebar.
+// Wider screens keep their layouts.
+@media print, screen and (max-width: 600px) {
+  .site-nav {
+    justify-content: flex-start;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .theme-toggle {
+    margin-left: auto;
+  }
+
+  header {
+    display: flow-root; // contains the floated photo
+    padding-bottom: 14px !important; // room between the card and the line below it
+    text-align: left;
+  }
+
+  header > br {
+    display: none;
+  }
+
+  header .image.avatar {
+    float: left;
+    margin: 0 16px 0 0;
+  }
+
+  header .image.avatar img {
+    width: 100px;
+    margin: 0;
+  }
+
+  header h1 {
+    margin: 0 0 4px;
+    font-size: 24px;
+    line-height: 1.15;
+  }
+
+  header position,
+  header > a,
+  header email {
+    display: block;
+  }
+
+  header position {
+    font-size: 1rem !important; // overrides the template's inline size
+  }
+
+  header > a,
+  header email {
+    font-size: 0.92rem;
+  }
+
+  header .social-icons {
+    margin-top: 6px;
+  }
+
+  header .social-icons a {
+    width: auto;
+    height: 1.8rem;
+    line-height: 1.8rem;
+    margin: 0 14px 0 0 !important; // overrides the template's inline margins
+  }
+}
+
+// Hairline across the content column between sections (Home: between News and Selected Publications).
+.section-rule {
+  width: 100%;
+  margin: 40px auto 18px; // more room above (after the news box) than below (before the heading)
+  border-top: 1px solid #e5e5e5; // same as the theme's other hairlines
+}
+
+// Photo galleries (More page). Click a photo to open the full-size image.
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 24px;
+}
+
+.photo-grid figure {
+  margin: 0;
+}
+
+.photo-grid figcaption {
+  display: none;
+}
+
+.photo-grid img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+// Phones: event photos stay 2 × 2 like on a laptop, just smaller and closer together; the
+// photography collages (.photo-grid.stack-on-phone) go one per row, since their small photos
+// need the width.
+@media print, screen and (max-width: 480px) {
+  .photo-grid {
+    gap: 8px;
+  }
+
+  .photo-grid img {
+    border-radius: 6px;
+  }
+
+  .photo-grid.stack-on-phone {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+// Dark theme, switched by assets/js/theme.js (follows the system until the visitor toggles).
+// Colours follow the theme's own auto-dark palette.
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --global-bg-color: #20212b;
+  --global-text-color: #dadbdf;
+  --global-theme-color: rgb(36, 150, 203);
+
+  body {
+    background-color: #20212b;
+    color: #dadbdf;
+  }
+
+  h1, h2, h3, h4, h5, h6, th, dt,
+  a,
+  .news-list span,
+  .site-nav a:hover,
+  .site-nav a.active,
+  .theme-toggle {
+    color: rgb(62, 183, 240);
+  }
+
+  a:hover {
+    color: #8fd3f5;
+  }
+
+  strong,
+  papertitle {
+    color: #eeeff0;
+  }
+
+  autocolor,
+  .site-nav a {
+    color: #dadbdf;
+  }
+
+  .theme-toggle .fa-moon {
+    display: none;
+  }
+
+  .theme-toggle .fa-sun {
+    display: inline-block;
+  }
+
+  .social-icons a {
+    color: #3eb7f0 !important;
+  }
+
+  .social-icons a:hover {
+    background-color: #20212b;
+  }
+
+  section,
+  hr,
+  .entry-row,
+  .site-nav {
+    border-color: #3a3c4a;
+  }
+
+  hr {
+    background: #3a3c4a;
+  }
+
+  .entry-date {
+    color: #a0a2ab;
+  }
+
+  .publications ol.bibliography li .author strong {
+    color: #fff;
+  }
+
+  .divider {
+    color: #5a5e72;
+  }
+
+  .section-rule {
+    border-color: #3a3c4a;
+  }
+
+  .news-box .news-list {
+    scrollbar-color: #4a4d5e transparent;
+  }
+
+  .publications ol.bibliography li .links a.btn {
+    color: #dadbdf;
+    border-color: #dadbdf;
+  }
+
+  .publications ol.bibliography li .links a.btn:hover {
+    color: rgb(62, 183, 240);
+    border-color: rgb(62, 183, 240);
+  }
+
+  .publications ol.bibliography li img.teaser {
+    box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.6);
+  }
+}

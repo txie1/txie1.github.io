@@ -1,0 +1,18 @@
+// Style experiment: venue badge on each thumbnail's top-left corner (from `conference_short`
+// in _data/publications.yml).
+// Switched on by `style_badges: true` in _config.yml; set it to false to get the previous look.
+
+.publications ol.bibliography li .abbr abbr.badge {
+  top: -9px; // straddles the thumbnail edge so it covers little of the figure
+  left: 9px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background-color: #043361;
+  color: #fff !important;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: default;
+}

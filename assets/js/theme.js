@@ -1,252 +1,145 @@
-// Has to be in the head tag, otherwise a flicker effect will occur.
+// Light/dark theme. Loaded in <head> so the theme is set before the page paints.
+// Light by default until the visitor picks a theme with the toggle button.
+// Easter egg (when the script tag has `data-sunset`): five clicks on the toggle switch, each within
+// 2 minutes of the last, switch to a secret "sunset" theme (_sass/sunset.scss). A little pixel me
+// (#buddy) pops out under the switch on each of those clicks: on the 2nd and 3rd she reacts to the
+// mode ("Too bright.." / "Too dark..", like the figures hidden in the More page collages), on the
+// 4th she asks for one more, on the 5th (unlock) she cheers, then she hides again. Sunset lasts only
+// for the current visit (sessionStorage) and never replaces the saved light/dark choice; one more
+// click leaves it.
+(function () {
+  var root = document.documentElement;
+  var script = document.currentScript;
+  var sunsetEnabled = !!(script && script.hasAttribute('data-sunset'));
+  var SUNSET_CLICKS = 5;
+  var CLICK_GAP_MS = 2 * 60 * 1000; // max pause between clicks that still counts towards sunset
+  var MODE_LINES = { light: 'Too bright..', dark: 'Too dark..' }; // 2nd and 3rd click
+  var LINES = { 4: 'one more?' };
 
-// Toggle through light, dark, and system theme settings.
-let toggleThemeSetting = () => {
-  let themeSetting = determineThemeSetting();
-  if (themeSetting == "system") {
-    setThemeSetting("light");
-  } else if (themeSetting == "light") {
-    setThemeSetting("dark");
-  } else {
-    setThemeSetting("system");
-  }
-};
-
-// Change the theme setting and apply the theme.
-let setThemeSetting = (themeSetting) => {
-  localStorage.setItem("theme", themeSetting);
-
-  document.documentElement.setAttribute("data-theme-setting", themeSetting);
-
-  applyTheme();
-};
-
-// Apply the computed dark or light theme to the website.
-let applyTheme = () => {
-  let theme = determineComputedTheme();
-
-  transTheme();
-  setHighlight(theme);
-  setGiscusTheme(theme);
-  setSearchTheme(theme);
-
-  // if mermaid is not defined, do nothing
-  if (typeof mermaid !== "undefined") {
-    setMermaidTheme(theme);
-  }
-
-  // if diff2html is not defined, do nothing
-  if (typeof Diff2HtmlUI !== "undefined") {
-    setDiff2htmlTheme(theme);
-  }
-
-  // if echarts is not defined, do nothing
-  if (typeof echarts !== "undefined") {
-    setEchartsTheme(theme);
-  }
-
-  // if vegaEmbed is not defined, do nothing
-  if (typeof vegaEmbed !== "undefined") {
-    setVegaLiteTheme(theme);
-  }
-
-  document.documentElement.setAttribute("data-theme", theme);
-
-  // Add class to tables.
-  let tables = document.getElementsByTagName("table");
-  for (let i = 0; i < tables.length; i++) {
-    if (theme == "dark") {
-      tables[i].classList.add("table-dark");
-    } else {
-      tables[i].classList.remove("table-dark");
+  function saved() {
+    try {
+      var theme = localStorage.getItem('theme');
+      return theme === 'light' || theme === 'dark' ? theme : null;
+    } catch (e) {
+      return null;
     }
   }
 
-  // Set jupyter notebooks themes.
-  let jupyterNotebooks = document.getElementsByClassName("jupyter-notebook-iframe-container");
-  for (let i = 0; i < jupyterNotebooks.length; i++) {
-    let bodyElement = jupyterNotebooks[i].getElementsByTagName("iframe")[0].contentWindow.document.body;
-    if (theme == "dark") {
-      bodyElement.setAttribute("data-jp-theme-light", "false");
-      bodyElement.setAttribute("data-jp-theme-name", "JupyterLab Dark");
-    } else {
-      bodyElement.setAttribute("data-jp-theme-light", "true");
-      bodyElement.setAttribute("data-jp-theme-name", "JupyterLab Light");
+  function save(theme) {
+    try {
+      if (theme) localStorage.setItem('theme', theme);
+      else localStorage.removeItem('theme');
+    } catch (e) {}
+  }
+
+  function session(key, value) {
+    try {
+      if (value === undefined) return sessionStorage.getItem(key) === '1';
+      if (value) sessionStorage.setItem(key, '1');
+      else sessionStorage.removeItem(key);
+    } catch (e) {
+      return false;
     }
   }
 
-  // Updates the background of medium-zoom overlay.
-  if (typeof medium_zoom !== "undefined") {
-    medium_zoom.update({
-      background: getComputedStyle(document.documentElement).getPropertyValue("--global-bg-color") + "ee", // + 'ee' for trasparency.
-    });
-  }
-};
-
-let setHighlight = (theme) => {
-  if (theme == "dark") {
-    document.getElementById("highlight_theme_light").media = "none";
-    document.getElementById("highlight_theme_dark").media = "";
-  } else {
-    document.getElementById("highlight_theme_dark").media = "none";
-    document.getElementById("highlight_theme_light").media = "";
-  }
-};
-
-let setGiscusTheme = (theme) => {
-  function sendMessage(message) {
-    const iframe = document.querySelector("iframe.giscus-frame");
-    if (!iframe) return;
-    iframe.contentWindow.postMessage({ giscus: message }, "https://giscus.app");
+  function sunsetOn() {
+    return sunsetEnabled && session('sunset');
   }
 
-  sendMessage({
-    setConfig: {
-      theme: theme,
-    },
-  });
-};
-
-let addMermaidZoom = (records, observer) => {
-  var svgs = d3.selectAll(".mermaid svg");
-  svgs.each(function () {
-    var svg = d3.select(this);
-    svg.html("<g>" + svg.html() + "</g>");
-    var inner = svg.select("g");
-    var zoom = d3.zoom().on("zoom", function (event) {
-      inner.attr("transform", event.transform);
-    });
-    svg.call(zoom);
-  });
-  observer.disconnect();
-};
-
-let setMermaidTheme = (theme) => {
-  if (theme == "light") {
-    // light theme name in mermaid is 'default'
-    // https://mermaid.js.org/config/theming.html#available-themes
-    theme = "default";
+  function regular() {
+    return saved() || 'light';
   }
 
-  /* Re-render the SVG, based on https://github.com/cotes2020/jekyll-theme-chirpy/blob/master/_includes/mermaid.html */
-  document.querySelectorAll(".mermaid").forEach((elem) => {
-    // Get the code block content from previous element, since it is the mermaid code itself as defined in Markdown, but it is hidden
-    let svgCode = elem.previousSibling.childNodes[0].innerHTML;
-    elem.removeAttribute("data-processed");
-    elem.innerHTML = svgCode;
-  });
-
-  mermaid.initialize({ theme: theme });
-  window.mermaid.init(undefined, document.querySelectorAll(".mermaid"));
-
-  const observable = document.querySelector(".mermaid svg");
-  if (observable !== null) {
-    var observer = new MutationObserver(addMermaidZoom);
-    const observerOptions = { childList: true };
-    observer.observe(observable, observerOptions);
+  function apply(theme) {
+    root.setAttribute('data-theme', theme);
   }
-};
 
-let setDiff2htmlTheme = (theme) => {
-  document.querySelectorAll(".diff2html").forEach((elem) => {
-    // Get the code block content from previous element, since it is the diff code itself as defined in Markdown, but it is hidden
-    let textData = elem.previousSibling.childNodes[0].innerHTML;
-    elem.innerHTML = "";
-    const configuration = { colorScheme: theme, drawFileList: true, highlight: true, matching: "lines" };
-    const diff2htmlUi = new Diff2HtmlUI(elem, textData, configuration);
-    diff2htmlUi.draw();
-  });
-};
+  apply(sunsetOn() ? 'sunset' : regular());
 
-let setEchartsTheme = (theme) => {
-  document.querySelectorAll(".echarts").forEach((elem) => {
-    // Get the code block content from previous element, since it is the echarts code itself as defined in Markdown, but it is hidden
-    let jsonData = elem.previousSibling.childNodes[0].innerHTML;
-    echarts.dispose(elem);
+  // The click streak is kept for the visit (sessionStorage), so it survives page reloads too:
+  // someone can click, go look at the collage figures on the More page, and click again.
+  var memoryStreak = { n: 0, last: 0, before: null };
 
-    if (theme === "dark") {
-      var chart = echarts.init(elem, "dark-fresh-cut");
-    } else {
-      var chart = echarts.init(elem);
+  function loadStreak() {
+    try {
+      return JSON.parse(sessionStorage.getItem('sunset-streak')) || memoryStreak;
+    } catch (e) {
+      return memoryStreak;
     }
+  }
 
-    chart.setOption(JSON.parse(jsonData));
-  });
-};
+  function storeStreak(streak) {
+    memoryStreak = streak;
+    try {
+      sessionStorage.setItem('sunset-streak', JSON.stringify(streak));
+    } catch (e) {}
+  }
 
-let setVegaLiteTheme = (theme) => {
-  document.querySelectorAll(".vega-lite").forEach((elem) => {
-    // Get the code block content from previous element, since it is the vega lite code itself as defined in Markdown, but it is hidden
-    let jsonData = elem.previousSibling.childNodes[0].innerHTML;
-    elem.innerHTML = "";
-    if (theme === "dark") {
-      vegaEmbed(elem, JSON.parse(jsonData), { theme: "dark" });
-    } else {
-      vegaEmbed(elem, JSON.parse(jsonData));
+  var savedBeforeClicks = null;
+
+  // Counts a click; returns how many clicks in a row so far (each within CLICK_GAP_MS of the last).
+  function countClick(now) {
+    var streak = loadStreak();
+    if (now - streak.last > CLICK_GAP_MS) streak = { n: 0, last: 0, before: saved() };
+    streak.n += 1;
+    streak.last = now;
+    storeStreak(streak);
+    savedBeforeClicks = streak.before;
+    return streak.n;
+  }
+
+  var buddy, bubble, sprite, hideTimer;
+
+  // Shows her with a line in the given pose ('left' or 'jump'); she hides again after `ms`.
+  function say(text, pose, ms) {
+    if (!buddy) return;
+    pose = pose || 'left';
+    sprite.src = sprite.dataset[pose];
+    buddy.classList.toggle('jump', pose === 'jump');
+    bubble.textContent = text;
+    sprite.classList.remove('hop');
+    void sprite.offsetWidth; // reflow so the hop restarts
+    sprite.classList.add('hop');
+    buddy.classList.add('here');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(hush, ms || 3500);
+  }
+
+  function hush() {
+    clearTimeout(hideTimer);
+    if (buddy) buddy.classList.remove('here');
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var button = document.getElementById('theme-toggle');
+    if (!button) return;
+    buddy = document.getElementById('buddy');
+    if (buddy) {
+      bubble = buddy.querySelector('.buddy-bubble');
+      sprite = buddy.querySelector('.buddy-sprite');
     }
-  });
-};
-
-let setSearchTheme = (theme) => {
-  const ninjaKeys = document.querySelector("ninja-keys");
-  if (!ninjaKeys) return;
-
-  if (theme === "dark") {
-    ninjaKeys.classList.add("dark");
-  } else {
-    ninjaKeys.classList.remove("dark");
-  }
-};
-
-let transTheme = () => {
-  document.documentElement.classList.add("transition");
-  window.setTimeout(() => {
-    document.documentElement.classList.remove("transition");
-  }, 500);
-};
-
-// Determine the expected state of the theme toggle, which can be "dark", "light", or
-// "system". Default is "system".
-let determineThemeSetting = () => {
-  let themeSetting = localStorage.getItem("theme");
-  if (themeSetting != "dark" && themeSetting != "light" && themeSetting != "system") {
-    themeSetting = "system";
-  }
-  return themeSetting;
-};
-
-// Determine the computed theme, which can be "dark" or "light". If the theme setting is
-// "system", the computed theme is determined based on the user's system preference.
-let determineComputedTheme = () => {
-  let themeSetting = determineThemeSetting();
-  if (themeSetting == "system") {
-    const userPref = window.matchMedia;
-    if (userPref && userPref("(prefers-color-scheme: dark)").matches) {
-      return "dark";
-    } else {
-      return "light";
-    }
-  } else {
-    return themeSetting;
-  }
-};
-
-let initTheme = () => {
-  let themeSetting = determineThemeSetting();
-
-  setThemeSetting(themeSetting);
-
-  // Add event listener to the theme toggle button.
-  document.addEventListener("DOMContentLoaded", function () {
-    const mode_toggle = document.getElementById("light-toggle");
-
-    mode_toggle.addEventListener("click", function () {
-      toggleThemeSetting();
+    button.addEventListener('click', function () {
+      var current = root.getAttribute('data-theme');
+      var n = sunsetEnabled ? countClick(Date.now()) : 0;
+      if (n >= SUNSET_CLICKS) {
+        storeStreak({ n: 0, last: 0, before: null });
+        save(savedBeforeClicks); // the burst of clicks shouldn't change the saved light/dark choice
+        session('sunset', true);
+        apply('sunset');
+        say("it's now sunset", 'jump');
+        document.dispatchEvent(new Event('sunset:on')); // e.g. the profile photo turns pixel
+      } else if (current === 'sunset') {
+        session('sunset', false);
+        apply(regular());
+        hush();
+      } else {
+        var next = current === 'dark' ? 'light' : 'dark';
+        apply(next);
+        save(next);
+        if (n === 2) document.dispatchEvent(new Event('sunset:near')); // e.g. fetch the pixel photo
+        if (n === 2 || n === 3) say(MODE_LINES[next]);
+        else if (LINES[n]) say(LINES[n]);
+      }
     });
   });
-
-  // Add event listener to the system theme preference change.
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
-    applyTheme();
-  });
-};
+})();

@@ -1,0 +1,12 @@
+---
+---
+
+@import "minimal-light-no-dark-mode";
+
+@import "custom";
+{% if site.style_badges %}@import "badges";{% endif %}
+{% if site.style_hover_captions %}@import "hover-captions";{% endif %}
+{% if site.style_magnifier %}@import "magnifier";{% endif %}
+{% if site.style_sunset %}@import "sunset";{% endif %}
+{% if site.style_pixel_avatar %}@import "pixel-avatar";{% endif %}
+{% if site.style_smooth_nav %}@import "smooth-nav";{% endif %}

@@ -1,0 +1,45 @@
+main:
+
+  - id: target-sft
+    title: "A Unifying Lens on Supervised Fine-Tuning Through Target Distribution Design"
+    authors: <strong>Tong Xie</strong>, Yuanhao Ban, Yunqi Hong, Sohyun An, Yihang Chen, <span class="nobr">Cho-Jui</span> Hsieh
+    conference: Preprint, 2026.
+    conference_short: Preprint
+    pdf: https://arxiv.org/abs/2606.11189
+    code: https://github.com/txie1/Target-SFT
+    page: https://txie1.github.io/Target-SFT/
+    image: /assets/img/publications/target_sft_fig2.png
+    image_size: [1400, 529]
+
+  - id: arena-t2i-hard
+    title: "Arena-T2I Hard: Benchmarking and Improving Faithfulness with Dependency-Aware Checklist"
+    authors: Yuanhao Ban, <strong>Tong Xie</strong>, Sohyun An, Yunqi Hong, Evan Frick, <span class="nobr">I-Hung</span> Hsu, <span class="nobr">Wei-Lin</span> Chiang, Ion Stoica, <span class="nobr">Cho-Jui</span> Hsieh
+    conference: Neural Information Processing Systems <strong>(NeurIPS)</strong>, 2026.
+    conference_short: NeurIPS 2026
+    pdf: https://arxiv.org/abs/2606.31711
+    code: https://github.com/banyuanhao/Arena-T2I-Hard
+    dataset: https://huggingface.co/datasets/lmarena-ai/Arena-T2I-Hard
+    page: https://banyuanhao.github.io/Arena-T2I-Hard-Page/
+    notes: Spotlight
+    image: /assets/img/publications/arena_t2i_hard.png
+    image_size: [624, 416]
+
+  - id: normbt
+    title: "When Distance Distracts: Representation Distance Bias in BT-Loss for Reward Models"
+    authors: <strong>Tong Xie</strong>, Andrew Bai, Yuanhao Ban, Yunqi Hong, Haoyu Li, <span class="nobr">Cho-Jui</span> Hsieh
+    conference: International Conference on Machine Learning <strong>(ICML)</strong>, 2026.
+    conference_short: ICML 2026
+    pdf: https://arxiv.org/abs/2512.06343
+    code: https://github.com/txie1/NormBT
+    image: /assets/img/publications/normbt_fig1.png
+    image_size: [1964, 492]
+
+  - id: retrac
+    title: "Data Attribution for Diffusion Models: Timestep-induced Bias in Influence Estimation"
+    authors: <strong>Tong Xie*</strong>, Haoyu Li*, Andrew Bai, <span class="nobr">Cho-Jui</span> Hsieh
+    conference: Transactions on Machine Learning Research <strong>(TMLR)</strong>, 2024.
+    conference_short: TMLR 2024
+    pdf: https://arxiv.org/abs/2401.09031
+    code: https://github.com/txie1/diffusion-ReTrac
+    image: /assets/img/publications/retrac.jpg
+    image_size: [1600, 490]

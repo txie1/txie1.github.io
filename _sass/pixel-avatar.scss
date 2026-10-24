@@ -1,0 +1,61 @@
+// Style experiment, part of the sunset Easter egg: once sunset mode has been found
+// (`html.avatar-unlocked`), clicking the profile photo flips it to its pixel-art version and back.
+// The avatar is a two-sided card: photo on the front, pixel art on the back; `html.avatar-pixel`
+// (assets/js/pixel-avatar.js) turns it over. Switched on by `style_pixel_avatar: true` in _config.yml.
+
+.image.avatar.pixel-swap {
+  perspective: 900px;
+}
+
+.avatar-unlocked .image.avatar.pixel-swap {
+  cursor: pointer;
+}
+
+.pixel-swap .flip-card {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  margin: 8px 0 20px; // the photo's own spacing, moved from the image to the card
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.45, 0.05, 0.25, 1);
+}
+
+.image.avatar.pixel-swap img {
+  display: block;
+  margin: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.pixel-swap .flip-back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotateY(180deg);
+}
+
+.avatar-pixel .pixel-swap .flip-card {
+  transform: rotateY(180deg);
+}
+
+.image.avatar.pixel-swap:focus-visible {
+  outline: none;
+}
+
+.image.avatar.pixel-swap:focus-visible .flip-card {
+  outline: 2px solid #043361;
+  outline-offset: 3px;
+}
+
+// Phones: the photo sits in the compact profile card, so no extra spacing around the card.
+@media print, screen and (max-width: 600px) {
+  .pixel-swap .flip-card {
+    margin: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-swap .flip-card {
+    transition: none;
+  }
+}

@@ -1,1 +1,145 @@
-let toggleThemeSetting=()=>{let e=determineThemeSetting();setThemeSetting("system"==e?"light":"light"==e?"dark":"system")},setThemeSetting=e=>{localStorage.setItem("theme",e),document.documentElement.setAttribute("data-theme-setting",e),applyTheme()},applyTheme=()=>{let e=determineComputedTheme();transTheme(),setHighlight(e),setGiscusTheme(e),setSearchTheme(e),"undefined"!=typeof mermaid&&setMermaidTheme(e),"undefined"!=typeof Diff2HtmlUI&&setDiff2htmlTheme(e),"undefined"!=typeof echarts&&setEchartsTheme(e),"undefined"!=typeof vegaEmbed&&setVegaLiteTheme(e),document.documentElement.setAttribute("data-theme",e);let t=document.getElementsByTagName("table");for(let i=0;i<t.length;i++)"dark"==e?t[i].classList.add("table-dark"):t[i].classList.remove("table-dark");let i=document.getElementsByClassName("jupyter-notebook-iframe-container");for(let t=0;t<i.length;t++){let m=i[t].getElementsByTagName("iframe")[0].contentWindow.document.body;"dark"==e?(m.setAttribute("data-jp-theme-light","false"),m.setAttribute("data-jp-theme-name","JupyterLab Dark")):(m.setAttribute("data-jp-theme-light","true"),m.setAttribute("data-jp-theme-name","JupyterLab Light"))}"undefined"!=typeof medium_zoom&&medium_zoom.update({background:getComputedStyle(document.documentElement).getPropertyValue("--global-bg-color")+"ee"})},setHighlight=e=>{"dark"==e?(document.getElementById("highlight_theme_light").media="none",document.getElementById("highlight_theme_dark").media=""):(document.getElementById("highlight_theme_dark").media="none",document.getElementById("highlight_theme_light").media="")},setGiscusTheme=e=>{function t(e){const t=document.querySelector("iframe.giscus-frame");t&&t.contentWindow.postMessage({giscus:e},"https://giscus.app")}t({setConfig:{theme:e}})},addMermaidZoom=(e,t)=>{d3.selectAll(".mermaid svg").each(function(){var e=d3.select(this);e.html("<g>"+e.html()+"</g>");var t=e.select("g"),i=d3.zoom().on("zoom",function(e){t.attr("transform",e.transform)});e.call(i)}),t.disconnect()},setMermaidTheme=e=>{"light"==e&&(e="default"),document.querySelectorAll(".mermaid").forEach(e=>{let t=e.previousSibling.childNodes[0].innerHTML;e.removeAttribute("data-processed"),e.innerHTML=t}),mermaid.initialize({theme:e}),window.mermaid.init(undefined,document.querySelectorAll(".mermaid"));const t=document.querySelector(".mermaid svg");if(null!==t){const e={childList:!0};new MutationObserver(addMermaidZoom).observe(t,e)}},setDiff2htmlTheme=e=>{document.querySelectorAll(".diff2html").forEach(t=>{let i=t.previousSibling.childNodes[0].innerHTML;t.innerHTML="",new Diff2HtmlUI(t,i,{colorScheme:e,drawFileList:!0,highlight:!0,matching:"lines"}).draw()})},setEchartsTheme=e=>{document.querySelectorAll(".echarts").forEach(t=>{let i=t.previousSibling.childNodes[0].innerHTML;if(echarts.dispose(t),"dark"===e)var m=echarts.init(t,"dark-fresh-cut");else m=echarts.init(t);m.setOption(JSON.parse(i))})},setVegaLiteTheme=e=>{document.querySelectorAll(".vega-lite").forEach(t=>{let i=t.previousSibling.childNodes[0].innerHTML;t.innerHTML="","dark"===e?vegaEmbed(t,JSON.parse(i),{theme:"dark"}):vegaEmbed(t,JSON.parse(i))})},setSearchTheme=e=>{const t=document.querySelector("ninja-keys");t&&("dark"===e?t.classList.add("dark"):t.classList.remove("dark"))},transTheme=()=>{document.documentElement.classList.add("transition"),window.setTimeout(()=>{document.documentElement.classList.remove("transition")},500)},determineThemeSetting=()=>{let e=localStorage.getItem("theme");return"dark"!=e&&"light"!=e&&"system"!=e&&(e="system"),e},determineComputedTheme=()=>{let e=determineThemeSetting();if("system"==e){const e=window.matchMedia;return e&&e("(prefers-color-scheme: dark)").matches?"dark":"light"}return e},initTheme=()=>{let e=determineThemeSetting();setThemeSetting(e),document.addEventListener("DOMContentLoaded",function(){document.getElementById("light-toggle").addEventListener("click",function(){toggleThemeSetting()})}),window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",({matches:e})=>{applyTheme()})};
+// Light/dark theme. Loaded in <head> so the theme is set before the page paints.
+// Light by default until the visitor picks a theme with the toggle button.
+// Easter egg (when the script tag has `data-sunset`): five clicks on the toggle switch, each within
+// 2 minutes of the last, switch to a secret "sunset" theme (_sass/sunset.scss). A little pixel me
+// (#buddy) pops out under the switch on each of those clicks: on the 2nd and 3rd she reacts to the
+// mode ("Too bright.." / "Too dark..", like the figures hidden in the More page collages), on the
+// 4th she asks for one more, on the 5th (unlock) she cheers, then she hides again. Sunset lasts only
+// for the current visit (sessionStorage) and never replaces the saved light/dark choice; one more
+// click leaves it.
+(function () {
+  var root = document.documentElement;
+  var script = document.currentScript;
+  var sunsetEnabled = !!(script && script.hasAttribute('data-sunset'));
+  var SUNSET_CLICKS = 5;
+  var CLICK_GAP_MS = 2 * 60 * 1000; // max pause between clicks that still counts towards sunset
+  var MODE_LINES = { light: 'Too bright..', dark: 'Too dark..' }; // 2nd and 3rd click
+  var LINES = { 4: 'one more?' };
+
+  function saved() {
+    try {
+      var theme = localStorage.getItem('theme');
+      return theme === 'light' || theme === 'dark' ? theme : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function save(theme) {
+    try {
+      if (theme) localStorage.setItem('theme', theme);
+      else localStorage.removeItem('theme');
+    } catch (e) {}
+  }
+
+  function session(key, value) {
+    try {
+      if (value === undefined) return sessionStorage.getItem(key) === '1';
+      if (value) sessionStorage.setItem(key, '1');
+      else sessionStorage.removeItem(key);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function sunsetOn() {
+    return sunsetEnabled && session('sunset');
+  }
+
+  function regular() {
+    return saved() || 'light';
+  }
+
+  function apply(theme) {
+    root.setAttribute('data-theme', theme);
+  }
+
+  apply(sunsetOn() ? 'sunset' : regular());
+
+  // The click streak is kept for the visit (sessionStorage), so it survives page reloads too:
+  // someone can click, go look at the collage figures on the More page, and click again.
+  var memoryStreak = { n: 0, last: 0, before: null };
+
+  function loadStreak() {
+    try {
+      return JSON.parse(sessionStorage.getItem('sunset-streak')) || memoryStreak;
+    } catch (e) {
+      return memoryStreak;
+    }
+  }
+
+  function storeStreak(streak) {
+    memoryStreak = streak;
+    try {
+      sessionStorage.setItem('sunset-streak', JSON.stringify(streak));
+    } catch (e) {}
+  }
+
+  var savedBeforeClicks = null;
+
+  // Counts a click; returns how many clicks in a row so far (each within CLICK_GAP_MS of the last).
+  function countClick(now) {
+    var streak = loadStreak();
+    if (now - streak.last > CLICK_GAP_MS) streak = { n: 0, last: 0, before: saved() };
+    streak.n += 1;
+    streak.last = now;
+    storeStreak(streak);
+    savedBeforeClicks = streak.before;
+    return streak.n;
+  }
+
+  var buddy, bubble, sprite, hideTimer;
+
+  // Shows her with a line in the given pose ('left' or 'jump'); she hides again after `ms`.
+  function say(text, pose, ms) {
+    if (!buddy) return;
+    pose = pose || 'left';
+    sprite.src = sprite.dataset[pose];
+    buddy.classList.toggle('jump', pose === 'jump');
+    bubble.textContent = text;
+    sprite.classList.remove('hop');
+    void sprite.offsetWidth; // reflow so the hop restarts
+    sprite.classList.add('hop');
+    buddy.classList.add('here');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(hush, ms || 3500);
+  }
+
+  function hush() {
+    clearTimeout(hideTimer);
+    if (buddy) buddy.classList.remove('here');
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var button = document.getElementById('theme-toggle');
+    if (!button) return;
+    buddy = document.getElementById('buddy');
+    if (buddy) {
+      bubble = buddy.querySelector('.buddy-bubble');
+      sprite = buddy.querySelector('.buddy-sprite');
+    }
+    button.addEventListener('click', function () {
+      var current = root.getAttribute('data-theme');
+      var n = sunsetEnabled ? countClick(Date.now()) : 0;
+      if (n >= SUNSET_CLICKS) {
+        storeStreak({ n: 0, last: 0, before: null });
+        save(savedBeforeClicks); // the burst of clicks shouldn't change the saved light/dark choice
+        session('sunset', true);
+        apply('sunset');
+        say("it's now sunset", 'jump');
+        document.dispatchEvent(new Event('sunset:on')); // e.g. the profile photo turns pixel
+      } else if (current === 'sunset') {
+        session('sunset', false);
+        apply(regular());
+        hush();
+      } else {
+        var next = current === 'dark' ? 'light' : 'dark';
+        apply(next);
+        save(next);
+        if (n === 2) document.dispatchEvent(new Event('sunset:near')); // e.g. fetch the pixel photo
+        if (n === 2 || n === 3) say(MODE_LINES[next]);
+        else if (LINES[n]) say(LINES[n]);
+      }
+    });
+  });
+})();

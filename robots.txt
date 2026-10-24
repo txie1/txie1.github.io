@@ -1,4 +1,0 @@
-User-agent: *
-Disallow:
-
-Sitemap: https://txie1.github.io/sitemap.xml

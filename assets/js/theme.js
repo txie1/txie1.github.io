@@ -137,6 +137,7 @@
         apply(next);
         save(next);
         if (n === 2) document.dispatchEvent(new Event('sunset:near')); // e.g. fetch the pixel photo
+        if (n >= 2) document.dispatchEvent(new CustomEvent('sunset:step', { detail: n })); // statistics
         if (n === 2 || n === 3) say(MODE_LINES[next]);
         else if (LINES[n]) say(LINES[n]);
       }

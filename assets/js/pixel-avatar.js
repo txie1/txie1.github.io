@@ -64,7 +64,9 @@
     if (!avatar) return;
 
     function flip() {
-      if (root.classList.contains('avatar-unlocked')) set(!root.classList.contains('avatar-pixel'));
+      if (!root.classList.contains('avatar-unlocked')) return;
+      set(!root.classList.contains('avatar-pixel'));
+      document.dispatchEvent(new Event('avatar:flip')); // statistics
     }
 
     if (root.classList.contains('avatar-unlocked')) loadPixel();

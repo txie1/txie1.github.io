@@ -32,6 +32,10 @@ og_image: /assets/img/og.jpg # picture shown when the site's link is shared (600
 # You may use the option to disable the footnote, "Powered by Jekyll and Minimal Light theme."
 enable_footnote: true
 
+# Visitor statistics: GoatCounter site code (dashboard: https://txie1205.goatcounter.com).
+# Remove the line to turn statistics off. Events are listed at the top of assets/js/stats.js.
+goatcounter: txie1205
+
 # Style experiments: set one to false (and restart `jekyll serve`) to go back to the previous look.
 style_badges: true # venue badges on thumbnails, _sass/badges.scss
 style_hover_captions: true # More page captions that appear on hover, _sass/hover-captions.scss

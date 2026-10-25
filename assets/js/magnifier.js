@@ -74,6 +74,7 @@
 
     var pointer = null; // last mouse position inside the image, in display pixels
     var frame = 0;
+    var spotted = null; // walker currently in view, to announce each sighting once
 
     function render() {
       frame = 0;
@@ -123,6 +124,10 @@
           bubble.style.top = box.top - origin.top + y - loupe.offsetHeight / 2 + 'px';
         }
         bubble.classList.toggle('on', !!found);
+        if (found && found !== spotted && found.id) {
+          document.dispatchEvent(new CustomEvent('walker:found', { detail: found.id })); // statistics
+        }
+        spotted = found;
       }
       if (eggs.length) frame = requestAnimationFrame(render); // keep the walkers walking
     }

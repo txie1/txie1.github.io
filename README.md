@@ -11,6 +11,8 @@ Personal homepage of Tong Xie, built with [Jekyll](https://jekyllrb.com/) and a 
 - More page: `more.md` (photos in `assets/img/more/`; page-size copies in `assets/img/more/web/`)
 - Top-right menu: `_data/navigation.yml`
 - Layout: `_layouts/homepage.html`; styles: `_sass/`; scripts: `assets/js/`
+- Visitor statistics: `goatcounter` in `_config.yml` (dashboard at https://txie1205.goatcounter.com);
+  the counted events are listed at the top of `assets/js/stats.js`
 
 Give new images their real `width`/`height` (or `image_size` in `publications.yml`) so the page
 doesn't shift while they load.
